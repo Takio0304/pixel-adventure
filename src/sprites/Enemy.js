@@ -12,6 +12,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.scene = scene;
         this.isDead = false;
         this.initialDirection = initialDirection;
+        this.turnDelay = 0; // 折り返しの遅延カウンター
         
         // 物理設定
         this.setBounce(0.1);
@@ -81,43 +82,70 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
     
     updateWalking() {
-        // 横移動
+        // 横移動を設定
         this.setVelocityX(this.speed * this.direction);
         
-        // 速度がゼロになった場合（何かにぶつかった）も折り返す
-        if (this.body.velocity.x === 0 && this.body.touching.left) {
+        // 1. 物理的な衝突チェック（壁、土管など）
+        if (this.body.blocked.left || this.body.touching.left) {
             this.direction = 1;
             this.setFlipX(true);
-        } else if (this.body.velocity.x === 0 && this.body.touching.right) {
+            this.setVelocityX(this.speed);
+            return;
+        } else if (this.body.blocked.right || this.body.touching.right) {
             this.direction = -1;
             this.setFlipX(false);
+            this.setVelocityX(-this.speed);
+            return;
         }
         
-        // 壁や端に当たったら向きを変える
-        if (this.body.blocked.left || this.body.blocked.right) {
+        // 2. 速度が極端に遅い場合（何かに引っかかっている）
+        if (Math.abs(this.body.velocity.x) < 10) {
             this.direction *= -1;
             this.setFlipX(this.direction > 0);
+            this.setVelocityX(this.speed * this.direction);
+            return;
         }
         
-        // 床の端を検知（レイキャストを使用）
-        const checkDistance = 20;
-        const rayX = this.x + (this.direction > 0 ? checkDistance : -checkDistance);
-        const rayY = this.y + this.height / 2 + 10;
-        
-        // 床があるかチェック
-        let foundFloor = false;
-        this.scene.platforms.getChildren().forEach(platform => {
-            const bounds = platform.getBounds();
-            if (rayX >= bounds.x && rayX <= bounds.x + bounds.width &&
-                rayY >= bounds.y && rayY <= bounds.y + bounds.height) {
-                foundFloor = true;
+        // 3. 床の端チェック（地面に立っている時のみ）
+        if (this.body.touching.down) {
+            // より近い位置をチェック（敵の幅の半分 + α）
+            const edgeCheckDistance = 12;
+            const checkX = this.x + (this.direction > 0 ? edgeCheckDistance : -edgeCheckDistance);
+            const checkY = this.y + this.height;
+            
+            // 下に床があるかチェック
+            let hasGround = false;
+            
+            for (let platform of this.scene.platforms.getChildren()) {
+                if (!platform.body) continue;
+                
+                const bounds = platform.getBounds();
+                
+                // 床の判定（Y座標は少し余裕を持たせる）
+                if (checkX >= bounds.x && 
+                    checkX <= bounds.x + bounds.width &&
+                    checkY >= bounds.y - 10 && 
+                    checkY <= bounds.y + bounds.height) {
+                    
+                    // 土管の場合は、上面にいる場合のみ床として扱う
+                    if (platform.texture && platform.texture.key === 'pipe') {
+                        if (this.y + this.height <= bounds.y + 10) {
+                            hasGround = true;
+                            break;
+                        }
+                    } else {
+                        hasGround = true;
+                        break;
+                    }
+                }
             }
-        });
-        
-        // 床がない（穴）場合は折り返す
-        if (!foundFloor) {
-            this.direction *= -1;
-            this.setFlipX(this.direction > 0);
+            
+            // 床がない = 穴がある
+            if (!hasGround) {
+                this.direction *= -1;
+                this.setFlipX(this.direction > 0);
+                this.setVelocityX(this.speed * this.direction);
+            }
         }
     }
     

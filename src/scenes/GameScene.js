@@ -89,7 +89,7 @@ export default class GameScene extends Phaser.Scene {
         // ゲーム状態の初期化
         this.score = 0;
         this.coins = 0;
-        this.lives = 3;
+        this.lives = 1; // テスト用
         this.isGameOver = false;
         this.startTime = this.time.now;
         
@@ -104,6 +104,14 @@ export default class GameScene extends Phaser.Scene {
         };
         this.time.delayedCall(500, () => {
             this.soundManager.startBGM(bgmTypes[this.currentStage]);
+        });
+        
+        // デバッグ用：Gキーでゲームオーバー画面を直接表示
+        this.input.keyboard.on('keydown-G', () => {
+            console.log('G key pressed - forcing game over');
+            this.lives = 0;
+            this.isGameOver = true;
+            this.showGameOver();
         });
     }
 
@@ -542,9 +550,12 @@ export default class GameScene extends Phaser.Scene {
     }
     
     playerDeath() {
+        console.log('playerDeath called - isGameOver:', this.isGameOver);
         if (this.isGameOver) return;
         
+        this.isGameOver = true;
         this.lives--;
+        console.log('Lives remaining:', this.lives);
         this.updateUI();
         
         // プレイヤーの死亡アニメーションを実行
@@ -554,21 +565,31 @@ export default class GameScene extends Phaser.Scene {
         
         if (this.lives > 0) {
             // ライフが残っている場合は再スタート
-            this.isGameOver = true;
-            this.time.delayedCall(2500, () => {
-                this.scene.restart();
+            console.log('Restarting in 2.5 seconds...');
+            this.time.addEvent({
+                delay: 2500,
+                callback: () => {
+                    this.scene.restart();
+                },
+                callbackScope: this
             });
         } else {
             // ライフがない場合はゲームオーバー処理
-            this.isGameOver = true;
-            // プレイヤーのアニメーション完了後に表示
-            this.time.delayedCall(2500, () => {
-                this.showGameOver();
+            console.log('Game Over - showing UI in 2.5 seconds...');
+            this.time.addEvent({
+                delay: 2500,
+                callback: () => {
+                    console.log('Timer triggered - calling showGameOver...');
+                    this.showGameOver();
+                },
+                callbackScope: this
             });
         }
     }
     
     showGameOver() {
+        console.log('showGameOver actually called');
+        
         // BGMを停止
         if (this.soundManager) {
             this.soundManager.stopBGM();

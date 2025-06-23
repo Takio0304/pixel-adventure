@@ -11,7 +11,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.setBounce(0.1);
         this.setCollideWorldBounds(false); // 下方向への落下を許可
         this.body.setSize(12, 14);
-        this.body.setOffset(2, 2);
+        this.body.setOffset(2, 0); // 下部のオフセットを0にして地面に接地
         
         // プレイヤーの状態
         this.state = {
@@ -207,10 +207,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             this.state.isCrouching = true;
             if (this.state.size === 'big') {
                 this.body.setSize(12, 16);
-                this.body.setOffset(2, 8);
+                this.body.setOffset(2, 6);
             } else {
                 this.body.setSize(12, 8);
-                this.body.setOffset(2, 8);
+                this.body.setOffset(2, 6);
             }
             const animKey = this.state.size === 'big' ? 'big_crouch' : 'crouch';
             this.play(animKey);
@@ -221,10 +221,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.state.isCrouching = false;
         if (this.state.size === 'big') {
             this.body.setSize(12, 22);
-            this.body.setOffset(2, 2);
+            this.body.setOffset(2, 0);
         } else {
             this.body.setSize(12, 14);
-            this.body.setOffset(2, 2);
+            this.body.setOffset(2, 0);
         }
     }
     
@@ -247,7 +247,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             // 小さいスプライトに戻す
             this.setTexture('mushroom_idle_0');
             this.body.setSize(12, 14);
-            this.body.setOffset(2, 2);
+            this.body.setOffset(2, 0);
             this.setTint(0xFFFFFF); // 色をリセット
             
             // ダメージアニメーション
@@ -321,7 +321,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                             // 大きいスプライトに変更
                             this.setTexture('mushroom_big_idle_0');
                             this.body.setSize(12, 22);
-                            this.body.setOffset(2, 2);
+                            this.body.setOffset(2, 0);
                             
                             // 現在のアニメーションを大きいサイズ用に更新
                             const currentAnim = this.anims.getCurrentKey();
@@ -337,7 +337,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 this.state.size = 'big'; // ファイアフラワーは自動的に大きくなる
                 this.setTexture('mushroom_big_idle_0');
                 this.body.setSize(12, 22);
-                this.body.setOffset(2, 2);
+                this.body.setOffset(2, 0);
                 
                 // 赤っぽい色に変更
                 this.setTint(0xFFAAAA);

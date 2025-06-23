@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { gameSettings } from '../config/settings.js';
 
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
-    constructor(scene, x, y, type) {
+    constructor(scene, x, y, type, initialDirection = -1) {
         super(scene, x, y, `enemy_${type}_0`);
         
         scene.add.existing(this);
@@ -11,6 +11,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.type = type;
         this.scene = scene;
         this.isDead = false;
+        this.initialDirection = initialDirection;
         
         // 物理設定
         this.setBounce(0.1);
@@ -33,28 +34,30 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         switch (this.type) {
             case 'walk':
                 this.speed = 50 * multiplier;
-                this.direction = -1; // -1: 左, 1: 右
+                this.direction = this.initialDirection; // 初期方向を使用
                 this.body.setSize(14, 14);
-                this.body.setOffset(1, 2);
+                this.body.setOffset(1, 0);
                 this.play('enemy_walk');
+                this.setFlipX(this.direction > 0);
                 break;
                 
             case 'fly':
                 this.speed = 80 * multiplier;
-                this.direction = -1;
+                this.direction = this.initialDirection;
                 this.flyHeight = this.y;
                 this.flyAmplitude = 30;
                 this.flyTimer = 0;
                 this.body.setSize(12, 10);
-                this.body.setOffset(2, 1);
+                this.body.setOffset(2, 0);
                 this.body.setAllowGravity(false);
                 this.play('enemy_fly');
+                this.setFlipX(this.direction > 0);
                 break;
                 
             case 'ghost':
                 this.speed = 60 * multiplier;
                 this.body.setSize(12, 14);
-                this.body.setOffset(2, 1);
+                this.body.setOffset(2, 0);
                 this.body.setAllowGravity(false);
                 this.play('enemy_ghost');
                 break;
@@ -83,6 +86,24 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         
         // 壁や端に当たったら向きを変える
         if (this.body.blocked.left || this.body.blocked.right) {
+            this.direction *= -1;
+            this.setFlipX(this.direction > 0);
+        }
+        
+        // 床の端を検知（レイキャストを使用）
+        const checkDistance = 20;
+        const rayX = this.x + (this.direction > 0 ? checkDistance : -checkDistance);
+        const rayY = this.y + this.height / 2 + 10;
+        
+        // 床があるかチェック
+        const tile = this.scene.platforms.getChildren().find(platform => {
+            const bounds = platform.getBounds();
+            return rayX >= bounds.x && rayX <= bounds.x + bounds.width &&
+                   rayY >= bounds.y && rayY <= bounds.y + bounds.height;
+        });
+        
+        // 床がない（穴）か、目の前に障害物がある場合は折り返す
+        if (!tile) {
             this.direction *= -1;
             this.setFlipX(this.direction > 0);
         }
@@ -160,21 +181,21 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
 // 歩行型敵
 export class WalkingEnemy extends Enemy {
-    constructor(scene, x, y) {
-        super(scene, x, y, 'walk');
+    constructor(scene, x, y, initialDirection = -1) {
+        super(scene, x, y, 'walk', initialDirection);
     }
 }
 
 // 飛行型敵
 export class FlyingEnemy extends Enemy {
-    constructor(scene, x, y) {
-        super(scene, x, y, 'fly');
+    constructor(scene, x, y, initialDirection = -1) {
+        super(scene, x, y, 'fly', initialDirection);
     }
 }
 
 // 追跡型敵
 export class ChasingEnemy extends Enemy {
-    constructor(scene, x, y) {
-        super(scene, x, y, 'ghost');
+    constructor(scene, x, y, initialDirection = -1) {
+        super(scene, x, y, 'ghost', initialDirection);
     }
 }

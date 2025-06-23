@@ -354,24 +354,24 @@ export default class GameScene extends Phaser.Scene {
             if (isGap) {
                 // 穴の始まりに見えない壁を作る
                 if (!previousWasGap) {
-                    this.createInvisibleWall(i - 8, GAME_HEIGHT - 30);
+                    this.createInvisibleWall(i - 8, GAME_HEIGHT - 22);
                 }
                 previousWasGap = true;
                 continue;
             } else {
                 // 穴の終わりに見えない壁を作る
                 if (previousWasGap) {
-                    this.createInvisibleWall(i + 8, GAME_HEIGHT - 30);
+                    this.createInvisibleWall(i + 8, GAME_HEIGHT - 22);
                 }
                 previousWasGap = false;
             }
             
-            const ground = this.platforms.create(i, GAME_HEIGHT - 30, `${blockType}_block`);
-            ground.setOrigin(0, 0);
+            const ground = this.platforms.create(i + 8, GAME_HEIGHT - 22, `${blockType}_block`);
+            ground.setOrigin(0.5, 0.5);
             
             // 地面の2段目
-            const ground2 = this.platforms.create(i, GAME_HEIGHT - 14, `${blockType}_block`);
-            ground2.setOrigin(0, 0);
+            const ground2 = this.platforms.create(i + 8, GAME_HEIGHT - 6, `${blockType}_block`);
+            ground2.setOrigin(0.5, 0.5);
         }
 
         // プラットフォームの配置（ステージごとに異なる配置）
@@ -388,12 +388,12 @@ export default class GameScene extends Phaser.Scene {
 
         // パイプの配置（ステージ全体に拡張）
         if (this.currentStage === 'GrasslandStage') {
-            this.createPipe(800, GAME_HEIGHT - 30);
-            this.createPipe(1200, GAME_HEIGHT - 30);
-            this.createPipe(2300, GAME_HEIGHT - 30);
-            this.createPipe(3000, GAME_HEIGHT - 30);
-            this.createPipe(3700, GAME_HEIGHT - 30);
-            this.createPipe(4400, GAME_HEIGHT - 30);
+            this.createPipe(800, GAME_HEIGHT - 22);
+            this.createPipe(1200, GAME_HEIGHT - 22);
+            this.createPipe(2300, GAME_HEIGHT - 22);
+            this.createPipe(3000, GAME_HEIGHT - 22);
+            this.createPipe(3700, GAME_HEIGHT - 22);
+            this.createPipe(4400, GAME_HEIGHT - 22);
         }
         
         // 敵の配置
@@ -416,17 +416,17 @@ export default class GameScene extends Phaser.Scene {
         const multiplier = enemyMultiplier[difficulty];
         
         if (this.currentStage === 'GrasslandStage') {
-            // 草原ステージの敵配置
+            // 草原ステージの敵配置（土管の位置: 800, 1200, 2300, 3000, 3700, 4400）
             this.enemies.add(new WalkingEnemy(this, 400, GAME_HEIGHT - 100));
-            this.enemies.add(new WalkingEnemy(this, 700, GAME_HEIGHT - 100));
-            this.enemies.add(new WalkingEnemy(this, 1100, GAME_HEIGHT - 100));
-            this.enemies.add(new WalkingEnemy(this, 1700, GAME_HEIGHT - 100));
-            this.enemies.add(new WalkingEnemy(this, 2100, GAME_HEIGHT - 100));
-            this.enemies.add(new WalkingEnemy(this, 2500, GAME_HEIGHT - 100));
-            this.enemies.add(new WalkingEnemy(this, 2900, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 700, GAME_HEIGHT - 100, 1)); // 右向き（土管が800にある）
+            this.enemies.add(new WalkingEnemy(this, 1100, GAME_HEIGHT - 100, 1)); // 右向き（土管が1200にある）
+            this.enemies.add(new WalkingEnemy(this, 1700, GAME_HEIGHT - 100, -1)); // 左向き（穴が1600-1700にある）
+            this.enemies.add(new WalkingEnemy(this, 2100, GAME_HEIGHT - 100, 1)); // 右向き（土管が2300にある）
+            this.enemies.add(new WalkingEnemy(this, 2500, GAME_HEIGHT - 100, -1)); // 左向き（穴が2400-2500にある）
+            this.enemies.add(new WalkingEnemy(this, 2900, GAME_HEIGHT - 100, 1)); // 右向き（土管が3000にある）
             this.enemies.add(new WalkingEnemy(this, 3400, GAME_HEIGHT - 100));
             this.enemies.add(new WalkingEnemy(this, 3900, GAME_HEIGHT - 100));
-            this.enemies.add(new WalkingEnemy(this, 4300, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 4300, GAME_HEIGHT - 100, 1)); // 右向き（土管が4400にある）
             
             // プラットフォーム上の敵
             this.enemies.add(new WalkingEnemy(this, 500, 430));
@@ -580,8 +580,8 @@ export default class GameScene extends Phaser.Scene {
 
     createPlatformAt(x, y, width, type) {
         for (let i = 0; i < width; i++) {
-            const block = this.platforms.create(x + i * 16, y, `${type}_block`);
-            block.setOrigin(0, 0);
+            const block = this.platforms.create(x + i * 16 + 8, y + 8, `${type}_block`);
+            block.setOrigin(0.5, 0.5);
         }
     }
     
@@ -750,9 +750,12 @@ export default class GameScene extends Phaser.Scene {
 
     hitQuestionBlock(player, block) {
         // プレイヤーが下から叩いた場合のみ反応
-        if (player.body.velocity.y < 0 && player.y > block.y) {
+        if (player.body.velocity.y < 0 && player.y > block.y + 5) {
             block.hit();
         }
+        
+        // 横や上からの衝突では通常の物理的な衝突として扱う
+        return true;
     }
     
     spawnItem(x, y, type) {
@@ -818,7 +821,7 @@ export default class GameScene extends Phaser.Scene {
     createGoal() {
         // ステージの終端にゴールを配置（拡張されたステージの終わり）
         const goalX = GAME_WIDTH * 4 - 200;
-        const goalY = GAME_HEIGHT - 30;
+        const goalY = GAME_HEIGHT - 22;
         
         // ステージタイプに応じたゴール
         const goalType = this.currentStage === 'CastleStage' ? 'gate' : 'flag';

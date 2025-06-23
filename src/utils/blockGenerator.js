@@ -99,6 +99,7 @@ export function createQuestionBlock(scene, x, y, content = 'coin') {
     const block = scene.physics.add.sprite(x, y, 'question_block');
     block.body.setImmovable(true);
     block.body.moves = false;
+    block.body.checkCollision.down = false; // 下からの衝突のみ許可
     block.content = content;
     block.used = false;
     

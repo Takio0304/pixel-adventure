@@ -428,11 +428,11 @@ export default class GameScene extends Phaser.Scene {
             this.enemies.add(new WalkingEnemy(this, 3900, GAME_HEIGHT - 100));
             this.enemies.add(new WalkingEnemy(this, 4300, GAME_HEIGHT - 100, 1)); // 右向き（土管が4400にある）
             
-            // プラットフォーム上の敵
-            this.enemies.add(new WalkingEnemy(this, 500, 430));
-            this.enemies.add(new WalkingEnemy(this, 1800, 430));
-            this.enemies.add(new WalkingEnemy(this, 2900, 330));
-            this.enemies.add(new WalkingEnemy(this, 4200, 450));
+            // 追加の地面の敵（元プラットフォーム上の敵を地面に配置）
+            this.enemies.add(new WalkingEnemy(this, 500, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 1800, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 2900, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 4200, GAME_HEIGHT - 100));
         } else if (this.currentStage === 'CaveStage') {
             // 洞窟ステージの敵配置
             this.enemies.add(new WalkingEnemy(this, 400, GAME_HEIGHT - 100));

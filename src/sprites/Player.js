@@ -7,6 +7,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this);
         
+        // プレイヤーを最前面に表示
+        this.setDepth(60);
+        
         // 物理設定
         this.setBounce(0.1);
         this.setCollideWorldBounds(false); // 下方向への落下を許可

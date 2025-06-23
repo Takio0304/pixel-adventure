@@ -63,8 +63,10 @@ export default class GameScene extends Phaser.Scene {
         this.physics.world.setBounds(0, 0, GAME_WIDTH * 4, GAME_HEIGHT + 200);
 
         // 背景要素を作成
-        createMarioBackground(this, this.currentStage); // マリオ風の背景
-        createClouds(this); // 雲
+        if (this.currentStage === 'GrasslandStage') {
+            createMarioBackground(this, this.currentStage); // マリオ風の背景
+            createClouds(this); // 雲
+        }
 
         // グループの作成
         this.platforms = this.physics.add.staticGroup();
@@ -228,6 +230,7 @@ export default class GameScene extends Phaser.Scene {
             strokeThickness: 4
         });
         this.scoreText.setScrollFactor(0);
+        this.scoreText.setDepth(100);
         
         // コイン表示
         this.coinText = this.add.text(16, 50, 'コイン: 0', {
@@ -239,6 +242,7 @@ export default class GameScene extends Phaser.Scene {
             strokeThickness: 4
         });
         this.coinText.setScrollFactor(0);
+        this.coinText.setDepth(100);
 
         // ライフ表示
         this.livesText = this.add.text(GAME_WIDTH - 16, 16, `ライフ: ${this.lives}`, {
@@ -251,6 +255,7 @@ export default class GameScene extends Phaser.Scene {
         });
         this.livesText.setOrigin(1, 0);
         this.livesText.setScrollFactor(0);
+        this.livesText.setDepth(100);
         
         // タイマー表示
         this.timerText = this.add.text(GAME_WIDTH - 16, 50, 'タイム: 0', {
@@ -263,6 +268,7 @@ export default class GameScene extends Phaser.Scene {
         });
         this.timerText.setOrigin(1, 0);
         this.timerText.setScrollFactor(0);
+        this.timerText.setDepth(100);
 
         // ステージ名表示
         const stageNames = {
@@ -281,6 +287,7 @@ export default class GameScene extends Phaser.Scene {
         });
         this.stageText.setOrigin(0.5, 0);
         this.stageText.setScrollFactor(0);
+        this.stageText.setDepth(100);
         
         // タイマー更新
         this.time.addEvent({
@@ -311,12 +318,12 @@ export default class GameScene extends Phaser.Scene {
             
             // 暗闇のオーバーレイ
             this.darkOverlay = this.add.graphics();
-            this.darkOverlay.setDepth(100);
+            this.darkOverlay.setDepth(50); // 100から50に下げて、UIやプレイヤーの上に来ないように
             this.darkOverlay.setScrollFactor(0);
             
             // 環境光を追加
             this.ambientLight = this.add.graphics();
-            this.ambientLight.setDepth(98);
+            this.ambientLight.setDepth(49); // 暗闇オーバーレイより下に
             this.ambientLight.setScrollFactor(0);
             
             // 更新処理

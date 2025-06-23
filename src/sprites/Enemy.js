@@ -8,6 +8,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this);
         
+        // 敵を表示
+        this.setDepth(55);
+        
         this.type = type;
         this.scene = scene;
         this.isDead = false;

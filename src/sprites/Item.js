@@ -9,6 +9,9 @@ export class Item extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this);
         
+        // アイテムを表示
+        this.setDepth(55);
+        
         this.type = type;
         this.scene = scene;
         this.collected = false;

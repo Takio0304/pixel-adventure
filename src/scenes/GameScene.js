@@ -290,8 +290,7 @@ export default class GameScene extends Phaser.Scene {
             this.createDarknessEffect();
         }
         
-        // 操作説明を最初に表示
-        this.showControls();
+        // 操作説明の表示を削除（メインメニューに表示があるため）
     }
     
     createDarknessEffect() {

@@ -186,7 +186,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             });
         } else {
             // ゲームオーバー処理
-            this.die();
+            if (this.scene.playerDeath) {
+                this.scene.playerDeath();
+            }
         }
     }
     

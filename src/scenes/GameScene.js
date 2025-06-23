@@ -191,7 +191,7 @@ export default class GameScene extends Phaser.Scene {
         this.coinText.setScrollFactor(0);
 
         // ライフ表示
-        this.livesText = this.add.text(GAME_WIDTH - 16, 16, 'ライフ: 3', {
+        this.livesText = this.add.text(GAME_WIDTH - 16, 16, `ライフ: ${this.lives}`, {
             fontSize: '24px',
             fontFamily: 'Arial',
             color: '#ffffff',
@@ -350,15 +350,8 @@ export default class GameScene extends Phaser.Scene {
 
         // パイプの配置
         if (this.currentStage === 'GrasslandStage') {
-            const pipe1 = this.platforms.create(800, GAME_HEIGHT - 94, 'pipe');
-            pipe1.setOrigin(0, 0);
-            pipe1.body.setSize(48, 64); // 正しい物理ボディサイズを設定
-            pipe1.body.setOffset(0, 0);
-            
-            const pipe2 = this.platforms.create(1200, GAME_HEIGHT - 94, 'pipe');
-            pipe2.setOrigin(0, 0);
-            pipe2.body.setSize(48, 64); // 正しい物理ボディサイズを設定
-            pipe2.body.setOffset(0, 0);
+            this.createPipe(800, GAME_HEIGHT - 30);
+            this.createPipe(1200, GAME_HEIGHT - 30);
         }
         
         // 敵の配置
@@ -432,6 +425,14 @@ export default class GameScene extends Phaser.Scene {
             const block = this.platforms.create(x + i * 16, y, `${type}_block`);
             block.setOrigin(0, 0);
         }
+    }
+    
+    createPipe(x, y) {
+        // パイプ本体（下部）
+        const pipeBottom = this.platforms.create(x, y, 'pipe');
+        pipeBottom.setOrigin(0, 1); // 左下を基準点に
+        pipeBottom.setDisplaySize(48, 64);
+        pipeBottom.refreshBody();
     }
 
     hitQuestionBlock(player, block) {
@@ -540,17 +541,23 @@ export default class GameScene extends Phaser.Scene {
     playerDeath() {
         if (this.isGameOver) return;
         
-        this.isGameOver = true;
         this.lives--;
+        this.updateUI();
         
-        // プレイヤーの死亡アニメーション（すでにdie()内でアニメーションは実行される）
+        // プレイヤーの死亡アニメーションを実行
+        if (!this.player.isDead) {
+            this.player.die();
+        }
+        
         if (this.lives > 0) {
             // ライフが残っている場合は再スタート
+            this.isGameOver = true;
             this.time.delayedCall(2500, () => {
                 this.scene.restart();
             });
         } else {
             // ライフがない場合はゲームオーバー処理
+            this.isGameOver = true;
             // プレイヤーのアニメーション完了後に表示
             this.time.delayedCall(2500, () => {
                 this.showGameOver();

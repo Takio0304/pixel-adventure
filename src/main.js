@@ -8,7 +8,7 @@ import SettingsScene from './scenes/SettingsScene.js';
 
 // ゲーム設定
 const config = {
-    type: Phaser.AUTO,
+    type: Phaser.CANVAS,
     width: GAME_WIDTH,
     height: GAME_HEIGHT,
     parent: 'game-container',
@@ -20,6 +20,16 @@ const config = {
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
+    },
+    render: {
+        pixelArt: true,
+        antialias: false
+    },
+    callbacks: {
+        postBoot: function(game) {
+            console.log('Phaser booted successfully');
+            console.log('WebGL available:', game.renderer.type === Phaser.WEBGL);
+        }
     }
 };
 

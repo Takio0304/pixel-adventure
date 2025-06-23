@@ -17,6 +17,7 @@ export default class GameScene extends Phaser.Scene {
 
     init(data) {
         this.currentStage = data.stage || 'GrasslandStage';
+        console.log('GameScene init - stage:', this.currentStage);
     }
 
     preload() {
@@ -25,12 +26,24 @@ export default class GameScene extends Phaser.Scene {
     }
 
     create() {
-        // スプライトとテクスチャを生成
-        createAnimatedMushroomSprites(this);
-        createBlockTextures(this);
-        createEnemySprites(this);
-        createItemSprites(this);
-        createGoalSprites(this);
+        console.log('GameScene create started');
+        try {
+            // スプライトとテクスチャを生成
+            console.log('Creating sprites...');
+            createAnimatedMushroomSprites(this);
+            createBlockTextures(this);
+            createEnemySprites(this);
+            createItemSprites(this);
+            createGoalSprites(this);
+            console.log('Sprites created successfully');
+        } catch (error) {
+            console.error('Error creating sprites:', error);
+            this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Error loading game assets: ' + error.message, {
+                fontSize: '24px',
+                fill: '#ff0000'
+            }).setOrigin(0.5);
+            return;
+        }
         
         // ステージに応じた背景色設定
         const bgColors = {
@@ -53,7 +66,9 @@ export default class GameScene extends Phaser.Scene {
         this.createStage();
 
         // プレイヤーの作成
+        console.log('Creating player...');
         this.player = new Player(this, 100, GAME_HEIGHT - 150);
+        console.log('Player created');
 
         // 衝突設定
         this.setupCollisions();
@@ -223,43 +238,51 @@ export default class GameScene extends Phaser.Scene {
     }
     
     createDarknessEffect() {
-        // 暗闇のレイヤー
-        this.darkness = this.add.renderTexture(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        this.darkness.setScrollFactor(0);
-        this.darkness.setDepth(100);
-        
-        // 暗闇を塗りつぶす
-        this.darkness.fill(0x000000, 0.7);
-        
-        // 光の円を作成
-        const lightRadius = 150;
-        const graphics = this.add.graphics();
-        
-        // グラデーション効果
-        for (let i = 0; i < lightRadius; i += 2) {
-            const alpha = 1 - (i / lightRadius);
-            graphics.fillStyle(0xffffff, alpha * alpha);
-            graphics.fillCircle(lightRadius, lightRadius, lightRadius - i);
+        // シンプルな暗闇効果（互換性重視）
+        try {
+            // 背景を暗くする
+            this.cameras.main.setBackgroundColor('#0a0a0a');
+            
+            // プレイヤーの周りに光を作成
+            const lightRadius = 150;
+            this.lightCircle = this.add.graphics();
+            this.lightCircle.setDepth(99);
+            
+            // 暗闇のオーバーレイ
+            this.darkOverlay = this.add.graphics();
+            this.darkOverlay.setDepth(100);
+            this.darkOverlay.setScrollFactor(0);
+            
+            // 更新処理
+            this.time.addEvent({
+                delay: 33,
+                callback: () => {
+                    if (this.player && this.darkOverlay) {
+                        this.darkOverlay.clear();
+                        
+                        // 画面全体を暗くする
+                        this.darkOverlay.fillStyle(0x000000, 0.8);
+                        this.darkOverlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+                        
+                        // プレイヤーの位置に穴を開ける
+                        const playerX = this.player.x - this.cameras.main.scrollX;
+                        const playerY = this.player.y - this.cameras.main.scrollY;
+                        
+                        // グラデーション効果
+                        for (let i = lightRadius; i > 0; i -= 5) {
+                            const alpha = i / lightRadius;
+                            this.darkOverlay.fillStyle(0x000000, alpha * 0.8);
+                            this.darkOverlay.fillCircle(playerX, playerY, i);
+                        }
+                    }
+                },
+                loop: true
+            });
+        } catch (error) {
+            console.warn('Darkness effect failed:', error);
+            // フォールバック: 暗い背景色のみ
+            this.cameras.main.setBackgroundColor('#1a1a1a');
         }
-        
-        graphics.generateTexture('light', lightRadius * 2, lightRadius * 2);
-        graphics.destroy();
-        
-        // 更新処理
-        this.time.addEvent({
-            delay: 16,
-            callback: () => {
-                if (this.player && this.darkness) {
-                    this.darkness.fill(0x000000, 0.7);
-                    
-                    const playerX = this.player.x - this.cameras.main.scrollX;
-                    const playerY = this.player.y - this.cameras.main.scrollY;
-                    
-                    this.darkness.erase('light', playerX - lightRadius, playerY - lightRadius);
-                }
-            },
-            loop: true
-        });
     }
 
     createStage() {

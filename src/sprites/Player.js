@@ -194,23 +194,35 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.isDead) return;
         
         this.isDead = true;
-        this.disableBody(true, false);
+        
+        // 物理エンジンを無効化（重力は残す）
+        this.body.setCollideWorldBounds(false);
+        this.body.checkCollision.none = true;
+        
+        // 死亡アニメーション
+        // まず上にジャンプ
+        this.setVelocityY(-400);
+        this.setVelocityX(0);
+        
+        // 回転しながら落下
         this.scene.tweens.add({
             targets: this,
-            y: this.y - 100,
-            angle: 180,
-            duration: 500,
-            ease: 'Power2',
-            onComplete: () => {
-                this.scene.tweens.add({
-                    targets: this,
-                    y: this.y + 300,
-                    duration: 500,
-                    onComplete: () => {
-                        this.destroy();
-                    }
-                });
-            }
+            angle: 720, // 2回転
+            duration: 2000,
+            ease: 'Linear'
+        });
+        
+        // 色を徐々に暗くする
+        this.scene.tweens.add({
+            targets: this,
+            tint: 0x666666,
+            duration: 1000,
+            ease: 'Power2'
+        });
+        
+        // 一定時間後にゲームオーバー画面へ
+        this.scene.time.delayedCall(2500, () => {
+            this.scene.gameOver();
         });
     }
     

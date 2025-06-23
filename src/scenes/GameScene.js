@@ -310,29 +310,55 @@ export default class GameScene extends Phaser.Scene {
             ground2.setOrigin(0, 0);
         }
 
-        // プラットフォームの配置
-        this.createPlatformAt(300, 500, 5, blockType);
-        this.createPlatformAt(500, 400, 4, blockType);
-        this.createPlatformAt(700, 450, 3, blockType);
-        this.createPlatformAt(900, 350, 6, blockType);
+        // プラットフォームの配置（ステージごとに異なる高さ）
+        if (this.currentStage === 'GrasslandStage') {
+            // 草原ステージ：より低い位置に配置（ジャンプで届く高さ）
+            this.createPlatformAt(300, 550, 5, blockType);
+            this.createPlatformAt(500, 480, 4, blockType);
+            this.createPlatformAt(700, 520, 3, blockType);
+            this.createPlatformAt(900, 450, 6, blockType);
+        } else {
+            // 他のステージ：元の高さ
+            this.createPlatformAt(300, 500, 5, blockType);
+            this.createPlatformAt(500, 400, 4, blockType);
+            this.createPlatformAt(700, 450, 3, blockType);
+            this.createPlatformAt(900, 350, 6, blockType);
+        }
 
-        // ？ブロックの配置
-        const qBlock1 = createQuestionBlock(this, 400, 350, 'coin');
-        this.questionBlocks.add(qBlock1);
-        
-        const qBlock2 = createQuestionBlock(this, 600, 300, 'mushroom');
-        this.questionBlocks.add(qBlock2);
-        
-        const qBlock3 = createQuestionBlock(this, 1000, 400, 'coin');
-        this.questionBlocks.add(qBlock3);
+        // ？ブロックの配置（ステージごとに異なる高さ）
+        if (this.currentStage === 'GrasslandStage') {
+            // 草原ステージ：より低い位置（プレイヤーがジャンプで届く高さ）
+            const qBlock1 = createQuestionBlock(this, 400, 450, 'coin');
+            this.questionBlocks.add(qBlock1);
+            
+            const qBlock2 = createQuestionBlock(this, 600, 400, 'mushroom');
+            this.questionBlocks.add(qBlock2);
+            
+            const qBlock3 = createQuestionBlock(this, 1000, 480, 'coin');
+            this.questionBlocks.add(qBlock3);
+        } else {
+            // 他のステージ：元の高さ
+            const qBlock1 = createQuestionBlock(this, 400, 350, 'coin');
+            this.questionBlocks.add(qBlock1);
+            
+            const qBlock2 = createQuestionBlock(this, 600, 300, 'mushroom');
+            this.questionBlocks.add(qBlock2);
+            
+            const qBlock3 = createQuestionBlock(this, 1000, 400, 'coin');
+            this.questionBlocks.add(qBlock3);
+        }
 
         // パイプの配置
         if (this.currentStage === 'GrasslandStage') {
             const pipe1 = this.platforms.create(800, GAME_HEIGHT - 94, 'pipe');
             pipe1.setOrigin(0, 0);
+            pipe1.body.setSize(48, 64); // 正しい物理ボディサイズを設定
+            pipe1.body.setOffset(0, 0);
             
             const pipe2 = this.platforms.create(1200, GAME_HEIGHT - 94, 'pipe');
             pipe2.setOrigin(0, 0);
+            pipe2.body.setSize(48, 64); // 正しい物理ボディサイズを設定
+            pipe2.body.setOffset(0, 0);
         }
         
         // 敵の配置
@@ -364,18 +390,40 @@ export default class GameScene extends Phaser.Scene {
     }
     
     spawnCoins() {
-        // プラットフォーム上のコイン
-        for (let i = 0; i < 5; i++) {
-            this.items.add(new Coin(this, 320 + i * 20, 470));
-        }
-        
-        for (let i = 0; i < 3; i++) {
-            this.items.add(new Coin(this, 720 + i * 20, 420));
-        }
-        
-        // 空中のコイン
-        for (let i = 0; i < 4; i++) {
-            this.items.add(new Coin(this, 900 + i * 30, 250));
+        if (this.currentStage === 'GrasslandStage') {
+            // 草原ステージ：より低い位置にコインを配置
+            // プラットフォーム上のコイン
+            for (let i = 0; i < 5; i++) {
+                this.items.add(new Coin(this, 320 + i * 20, 520));
+            }
+            
+            for (let i = 0; i < 3; i++) {
+                this.items.add(new Coin(this, 720 + i * 20, 490));
+            }
+            
+            // 空中のコイン（ジャンプで取れる高さ）
+            for (let i = 0; i < 4; i++) {
+                this.items.add(new Coin(this, 900 + i * 30, 350));
+            }
+            
+            // 地面近くのコイン
+            for (let i = 0; i < 3; i++) {
+                this.items.add(new Coin(this, 150 + i * 25, GAME_HEIGHT - 80));
+            }
+        } else {
+            // 他のステージ：元の高さ
+            for (let i = 0; i < 5; i++) {
+                this.items.add(new Coin(this, 320 + i * 20, 470));
+            }
+            
+            for (let i = 0; i < 3; i++) {
+                this.items.add(new Coin(this, 720 + i * 20, 420));
+            }
+            
+            // 空中のコイン
+            for (let i = 0; i < 4; i++) {
+                this.items.add(new Coin(this, 900 + i * 30, 250));
+            }
         }
     }
 

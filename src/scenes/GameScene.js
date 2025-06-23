@@ -12,6 +12,7 @@ import { SoundManager } from '../managers/SoundManager.js';
 import { Fireball, createFireballSprite } from '../sprites/Fireball.js';
 import { gameSettings } from '../config/settings.js';
 import { createClouds } from '../utils/cloudGenerator.js';
+import { createMarioBackground } from '../utils/marioBackgroundGenerator.js';
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -61,8 +62,9 @@ export default class GameScene extends Phaser.Scene {
         // 物理エンジンの設定（ステージを長くする、下方向に余裕を持たせる）
         this.physics.world.setBounds(0, 0, GAME_WIDTH * 4, GAME_HEIGHT + 200);
 
-        // 雲を作成（背景要素）
-        createClouds(this);
+        // 背景要素を作成
+        createMarioBackground(this, this.currentStage); // マリオ風の背景
+        createClouds(this); // 雲
 
         // グループの作成
         this.platforms = this.physics.add.staticGroup();

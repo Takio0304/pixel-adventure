@@ -54,8 +54,8 @@ export default class GameScene extends Phaser.Scene {
         };
         this.cameras.main.setBackgroundColor(bgColors[this.currentStage]);
 
-        // 物理エンジンの設定
-        this.physics.world.setBounds(0, 0, GAME_WIDTH * 2, GAME_HEIGHT);
+        // 物理エンジンの設定（ステージを長くする）
+        this.physics.world.setBounds(0, 0, GAME_WIDTH * 4, GAME_HEIGHT);
 
         // グループの作成
         this.platforms = this.physics.add.staticGroup();
@@ -309,8 +309,11 @@ export default class GameScene extends Phaser.Scene {
         };
         const blockType = blockTypes[this.currentStage];
 
-        // 地面の作成
-        for (let i = 0; i < GAME_WIDTH * 2; i += 16) {
+        // 地面の作成（ステージ全体に拡張）
+        for (let i = 0; i < GAME_WIDTH * 4; i += 16) {
+            // 穴を作る（ステージごとに異なる位置）
+            if (this.shouldCreateGap(i)) continue;
+            
             const ground = this.platforms.create(i, GAME_HEIGHT - 30, `${blockType}_block`);
             ground.setOrigin(0, 0);
             
@@ -319,48 +322,26 @@ export default class GameScene extends Phaser.Scene {
             ground2.setOrigin(0, 0);
         }
 
-        // プラットフォームの配置（ステージごとに異なる高さ）
+        // プラットフォームの配置（ステージごとに異なる配置）
         if (this.currentStage === 'GrasslandStage') {
-            // 草原ステージ：より低い位置に配置（ジャンプで届く高さ）
-            this.createPlatformAt(300, 550, 5, blockType);
-            this.createPlatformAt(500, 480, 4, blockType);
-            this.createPlatformAt(700, 520, 3, blockType);
-            this.createPlatformAt(900, 450, 6, blockType);
-        } else {
-            // 他のステージ：元の高さ
-            this.createPlatformAt(300, 500, 5, blockType);
-            this.createPlatformAt(500, 400, 4, blockType);
-            this.createPlatformAt(700, 450, 3, blockType);
-            this.createPlatformAt(900, 350, 6, blockType);
+            this.createGrasslandPlatforms(blockType);
+        } else if (this.currentStage === 'CaveStage') {
+            this.createCavePlatforms(blockType);
+        } else if (this.currentStage === 'CastleStage') {
+            this.createCastlePlatforms(blockType);
         }
 
-        // ？ブロックの配置（ステージごとに異なる高さ）
-        if (this.currentStage === 'GrasslandStage') {
-            // 草原ステージ：より低い位置（プレイヤーがジャンプで届く高さ）
-            const qBlock1 = createQuestionBlock(this, 400, 450, 'coin');
-            this.questionBlocks.add(qBlock1);
-            
-            const qBlock2 = createQuestionBlock(this, 600, 400, 'mushroom');
-            this.questionBlocks.add(qBlock2);
-            
-            const qBlock3 = createQuestionBlock(this, 1000, 480, 'coin');
-            this.questionBlocks.add(qBlock3);
-        } else {
-            // 他のステージ：元の高さ
-            const qBlock1 = createQuestionBlock(this, 400, 350, 'coin');
-            this.questionBlocks.add(qBlock1);
-            
-            const qBlock2 = createQuestionBlock(this, 600, 300, 'mushroom');
-            this.questionBlocks.add(qBlock2);
-            
-            const qBlock3 = createQuestionBlock(this, 1000, 400, 'coin');
-            this.questionBlocks.add(qBlock3);
-        }
+        // ？ブロックの配置（ステージ全体に拡張）
+        this.createQuestionBlocks();
 
-        // パイプの配置
+        // パイプの配置（ステージ全体に拡張）
         if (this.currentStage === 'GrasslandStage') {
             this.createPipe(800, GAME_HEIGHT - 30);
             this.createPipe(1200, GAME_HEIGHT - 30);
+            this.createPipe(2300, GAME_HEIGHT - 30);
+            this.createPipe(3000, GAME_HEIGHT - 30);
+            this.createPipe(3700, GAME_HEIGHT - 30);
+            this.createPipe(4400, GAME_HEIGHT - 30);
         }
         
         // 敵の配置
@@ -374,58 +355,166 @@ export default class GameScene extends Phaser.Scene {
     }
     
     spawnEnemies() {
-        // 歩行型敵
-        this.enemies.add(new WalkingEnemy(this, 400, GAME_HEIGHT - 100));
-        this.enemies.add(new WalkingEnemy(this, 700, GAME_HEIGHT - 100));
-        this.enemies.add(new WalkingEnemy(this, 1100, GAME_HEIGHT - 100));
-        
-        // 飛行型敵
-        if (this.currentStage !== 'GrasslandStage') {
+        if (this.currentStage === 'GrasslandStage') {
+            // 草原ステージの敵配置
+            this.enemies.add(new WalkingEnemy(this, 400, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 700, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 1100, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 1700, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 2100, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 2500, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 2900, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 3400, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 3900, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 4300, GAME_HEIGHT - 100));
+            
+            // プラットフォーム上の敵
+            this.enemies.add(new WalkingEnemy(this, 500, 430));
+            this.enemies.add(new WalkingEnemy(this, 1800, 430));
+            this.enemies.add(new WalkingEnemy(this, 2900, 330));
+            this.enemies.add(new WalkingEnemy(this, 4200, 450));
+        } else if (this.currentStage === 'CaveStage') {
+            // 洞窟ステージの敵配置
+            this.enemies.add(new WalkingEnemy(this, 400, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 800, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 1600, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 2300, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 3200, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 4100, GAME_HEIGHT - 100));
+            
+            // 飛行型敵
             this.enemies.add(new FlyingEnemy(this, 600, 300));
             this.enemies.add(new FlyingEnemy(this, 1000, 250));
-        }
-        
-        // 追跡型敵（洞窟と城のみ）
-        if (this.currentStage === 'CaveStage' || this.currentStage === 'CastleStage') {
+            this.enemies.add(new FlyingEnemy(this, 1800, 300));
+            this.enemies.add(new FlyingEnemy(this, 2400, 350));
+            this.enemies.add(new FlyingEnemy(this, 3000, 250));
+            this.enemies.add(new FlyingEnemy(this, 3600, 300));
+            this.enemies.add(new FlyingEnemy(this, 4400, 320));
+            
+            // 追跡型敵
             this.enemies.add(new ChasingEnemy(this, 1400, 300));
+            this.enemies.add(new ChasingEnemy(this, 2700, 300));
+            this.enemies.add(new ChasingEnemy(this, 3900, 350));
+        } else if (this.currentStage === 'CastleStage') {
+            // 城ステージの敵配置（最も難しい）
+            this.enemies.add(new WalkingEnemy(this, 350, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 650, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 1000, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 1600, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 2200, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 2800, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 3500, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 4000, GAME_HEIGHT - 100));
+            this.enemies.add(new WalkingEnemy(this, 4600, GAME_HEIGHT - 100));
+            
+            // プラットフォーム上の敵
+            this.enemies.add(new WalkingEnemy(this, 750, 250));
+            this.enemies.add(new WalkingEnemy(this, 1350, 230));
+            this.enemies.add(new WalkingEnemy(this, 2750, 270));
+            this.enemies.add(new WalkingEnemy(this, 3850, 200));
+            
+            // 飛行型敵
+            this.enemies.add(new FlyingEnemy(this, 500, 280));
+            this.enemies.add(new FlyingEnemy(this, 900, 200));
+            this.enemies.add(new FlyingEnemy(this, 1500, 250));
+            this.enemies.add(new FlyingEnemy(this, 2100, 200));
+            this.enemies.add(new FlyingEnemy(this, 2600, 300));
+            this.enemies.add(new FlyingEnemy(this, 3300, 280));
+            this.enemies.add(new FlyingEnemy(this, 4100, 300));
+            
+            // 追跡型敵（多め）
+            this.enemies.add(new ChasingEnemy(this, 1200, 300));
+            this.enemies.add(new ChasingEnemy(this, 2000, 250));
+            this.enemies.add(new ChasingEnemy(this, 2900, 200));
+            this.enemies.add(new ChasingEnemy(this, 3700, 250));
+            this.enemies.add(new ChasingEnemy(this, 4500, 300));
         }
     }
     
     spawnCoins() {
         if (this.currentStage === 'GrasslandStage') {
-            // 草原ステージ：より低い位置にコインを配置
-            // プラットフォーム上のコイン
-            for (let i = 0; i < 5; i++) {
-                this.items.add(new Coin(this, 320 + i * 20, 520));
-            }
+            // 草原ステージのコイン配置
+            this.createCoinLine(320, 520, 5);
+            this.createCoinLine(720, 490, 3);
+            this.createCoinLine(900, 350, 4);
+            this.createCoinLine(150, GAME_HEIGHT - 80, 3);
+            this.createCoinLine(1320, 470, 4);
+            this.createCoinLine(1640, 320, 3);
+            this.createCoinLine(1820, 450, 5);
+            this.createCoinLine(2220, 490, 3);
+            this.createCoinLine(2620, 420, 6);
+            this.createCoinLine(2920, 350, 4);
+            this.createCoinLine(3240, 300, 4);
+            this.createCoinLine(3520, 450, 5);
+            this.createCoinLine(3820, 390, 3);
+            this.createCoinLine(4220, 470, 4);
+            this.createCoinLine(4520, 420, 6);
             
-            for (let i = 0; i < 3; i++) {
-                this.items.add(new Coin(this, 720 + i * 20, 490));
-            }
+            // 穴の上のコイン（リスクリワード）
+            this.createCoinArc(1650, 250, 3);
+            this.createCoinArc(2450, 280, 3);
+            this.createCoinArc(3275, 230, 4);
+        } else if (this.currentStage === 'CaveStage') {
+            // 洞窟ステージのコイン配置
+            this.createCoinLine(320, 470, 4);
+            this.createCoinLine(620, 370, 3);
+            this.createCoinLine(920, 320, 3);
+            this.createCoinLine(1220, 420, 4);
+            this.createCoinLine(1600, 250, 2);
+            this.createCoinLine(1820, 370, 4);
+            this.createCoinLine(2120, 300, 3);
+            this.createCoinLine(2520, 420, 3);
+            this.createCoinLine(2720, 320, 2);
+            this.createCoinLine(2920, 250, 2);
+            this.createCoinLine(3320, 370, 4);
+            this.createCoinLine(3620, 290, 3);
+            this.createCoinLine(4120, 420, 5);
+            this.createCoinLine(4420, 350, 4);
             
-            // 空中のコイン（ジャンプで取れる高さ）
-            for (let i = 0; i < 4; i++) {
-                this.items.add(new Coin(this, 900 + i * 30, 350));
-            }
+            // 難しい位置のコイン
+            this.createCoinArc(1450, 200, 3);
+            this.createCoinArc(2300, 180, 4);
+            this.createCoinArc(3100, 180, 4);
+        } else if (this.currentStage === 'CastleStage') {
+            // 城ステージのコイン配置（最も難しい）
+            this.createCoinLine(320, 450, 3);
+            this.createCoinLine(570, 350, 2);
+            this.createCoinLine(770, 270, 2);
+            this.createCoinLine(970, 370, 3);
+            this.createCoinLine(1220, 320, 2);
+            this.createCoinLine(1370, 250, 2);
+            this.createCoinLine(1720, 320, 3);
+            this.createCoinLine(2020, 250, 2);
+            this.createCoinLine(2570, 370, 2);
+            this.createCoinLine(2770, 290, 2);
+            this.createCoinLine(2970, 220, 2);
+            this.createCoinLine(3370, 350, 3);
+            this.createCoinLine(3720, 270, 2);
+            this.createCoinLine(3870, 220, 2);
+            this.createCoinLine(4220, 370, 3);
+            this.createCoinLine(4520, 320, 4);
             
-            // 地面近くのコイン
-            for (let i = 0; i < 3; i++) {
-                this.items.add(new Coin(this, 150 + i * 25, GAME_HEIGHT - 80));
-            }
-        } else {
-            // 他のステージ：元の高さ
-            for (let i = 0; i < 5; i++) {
-                this.items.add(new Coin(this, 320 + i * 20, 470));
-            }
-            
-            for (let i = 0; i < 3; i++) {
-                this.items.add(new Coin(this, 720 + i * 20, 420));
-            }
-            
-            // 空中のコイン
-            for (let i = 0; i < 4; i++) {
-                this.items.add(new Coin(this, 900 + i * 30, 250));
-            }
+            // 超難しい位置のコイン
+            this.createCoinArc(1600, 180, 3);
+            this.createCoinArc(2400, 150, 3);
+            this.createCoinArc(3200, 150, 4);
+            this.createCoinArc(4000, 180, 3);
+        }
+    }
+    
+    createCoinLine(x, y, count) {
+        for (let i = 0; i < count; i++) {
+            this.items.add(new Coin(this, x + i * 25, y));
+        }
+    }
+    
+    createCoinArc(x, y, count) {
+        const arcHeight = 50;
+        for (let i = 0; i < count; i++) {
+            const t = i / (count - 1);
+            const arcX = x + i * 40;
+            const arcY = y - Math.sin(t * Math.PI) * arcHeight;
+            this.items.add(new Coin(this, arcX, arcY));
         }
     }
 
@@ -442,6 +531,150 @@ export default class GameScene extends Phaser.Scene {
         pipeBottom.setOrigin(0, 1); // 左下を基準点に
         pipeBottom.setDisplaySize(48, 64);
         pipeBottom.refreshBody();
+    }
+    
+    shouldCreateGap(x) {
+        // ステージごとに異なる穴の位置
+        const gaps = {
+            'GrasslandStage': [
+                { start: 1600, end: 1700 },
+                { start: 2400, end: 2500 },
+                { start: 3200, end: 3350 }
+            ],
+            'CaveStage': [
+                { start: 1400, end: 1550 },
+                { start: 2200, end: 2400 },
+                { start: 3000, end: 3200 },
+                { start: 3800, end: 4000 }
+            ],
+            'CastleStage': [
+                { start: 1500, end: 1650 },
+                { start: 2300, end: 2500 },
+                { start: 3100, end: 3300 },
+                { start: 3900, end: 4100 }
+            ]
+        };
+        
+        const stageGaps = gaps[this.currentStage] || [];
+        return stageGaps.some(gap => x >= gap.start && x < gap.end);
+    }
+    
+    createGrasslandPlatforms(blockType) {
+        // 前半部分
+        this.createPlatformAt(300, 550, 5, blockType);
+        this.createPlatformAt(500, 480, 4, blockType);
+        this.createPlatformAt(700, 520, 3, blockType);
+        this.createPlatformAt(900, 450, 6, blockType);
+        
+        // 中盤部分
+        this.createPlatformAt(1300, 500, 4, blockType);
+        this.createPlatformAt(1500, 400, 3, blockType);
+        // 穴の上のプラットフォーム
+        this.createPlatformAt(1620, 350, 3, blockType);
+        this.createPlatformAt(1800, 480, 5, blockType);
+        this.createPlatformAt(2000, 420, 4, blockType);
+        this.createPlatformAt(2200, 520, 3, blockType);
+        
+        // 後半部分
+        this.createPlatformAt(2600, 450, 6, blockType);
+        this.createPlatformAt(2900, 380, 4, blockType);
+        // 穴の上のプラットフォーム
+        this.createPlatformAt(3220, 330, 4, blockType);
+        this.createPlatformAt(3500, 480, 5, blockType);
+        this.createPlatformAt(3800, 420, 3, blockType);
+        this.createPlatformAt(4200, 500, 4, blockType);
+        this.createPlatformAt(4500, 450, 6, blockType);
+    }
+    
+    createCavePlatforms(blockType) {
+        // 洞窟ステージ：より難しい配置
+        this.createPlatformAt(300, 500, 4, blockType);
+        this.createPlatformAt(600, 400, 3, blockType);
+        this.createPlatformAt(900, 350, 3, blockType);
+        this.createPlatformAt(1200, 450, 4, blockType);
+        
+        // 穴の周りの難しいジャンプ
+        this.createPlatformAt(1300, 300, 2, blockType);
+        this.createPlatformAt(1580, 280, 2, blockType);
+        this.createPlatformAt(1800, 400, 4, blockType);
+        this.createPlatformAt(2100, 330, 3, blockType);
+        
+        // 中盤の複雑な配置
+        this.createPlatformAt(2500, 450, 3, blockType);
+        this.createPlatformAt(2700, 350, 2, blockType);
+        this.createPlatformAt(2900, 280, 2, blockType);
+        this.createPlatformAt(3300, 400, 4, blockType);
+        this.createPlatformAt(3600, 320, 3, blockType);
+        
+        // 最終部分
+        this.createPlatformAt(4100, 450, 5, blockType);
+        this.createPlatformAt(4400, 380, 4, blockType);
+        this.createPlatformAt(4700, 500, 3, blockType);
+    }
+    
+    createCastlePlatforms(blockType) {
+        // 城ステージ：最も難しい配置
+        this.createPlatformAt(300, 480, 3, blockType);
+        this.createPlatformAt(550, 380, 2, blockType);
+        this.createPlatformAt(750, 300, 2, blockType);
+        this.createPlatformAt(950, 400, 3, blockType);
+        
+        // 動く足場のような配置
+        this.createPlatformAt(1200, 350, 2, blockType);
+        this.createPlatformAt(1350, 280, 2, blockType);
+        this.createPlatformAt(1700, 350, 3, blockType);
+        this.createPlatformAt(2000, 280, 2, blockType);
+        
+        // 精密なジャンプが必要な部分
+        this.createPlatformAt(2550, 400, 2, blockType);
+        this.createPlatformAt(2750, 320, 2, blockType);
+        this.createPlatformAt(2950, 250, 2, blockType);
+        this.createPlatformAt(3350, 380, 3, blockType);
+        
+        // 最終チャレンジ
+        this.createPlatformAt(3700, 300, 2, blockType);
+        this.createPlatformAt(3850, 250, 2, blockType);
+        this.createPlatformAt(4200, 400, 3, blockType);
+        this.createPlatformAt(4500, 350, 4, blockType);
+        this.createPlatformAt(4800, 450, 3, blockType);
+    }
+    
+    createQuestionBlocks() {
+        if (this.currentStage === 'GrasslandStage') {
+            // 草原ステージの？ブロック
+            this.questionBlocks.add(createQuestionBlock(this, 400, 450, 'coin'));
+            this.questionBlocks.add(createQuestionBlock(this, 600, 400, 'mushroom'));
+            this.questionBlocks.add(createQuestionBlock(this, 1000, 480, 'coin'));
+            this.questionBlocks.add(createQuestionBlock(this, 1400, 350, 'star'));
+            this.questionBlocks.add(createQuestionBlock(this, 1900, 380, 'coin'));
+            this.questionBlocks.add(createQuestionBlock(this, 2300, 450, 'mushroom'));
+            this.questionBlocks.add(createQuestionBlock(this, 2800, 330, 'coin'));
+            this.questionBlocks.add(createQuestionBlock(this, 3400, 430, 'fireflower'));
+            this.questionBlocks.add(createQuestionBlock(this, 3900, 380, 'coin'));
+            this.questionBlocks.add(createQuestionBlock(this, 4300, 450, 'star'));
+        } else if (this.currentStage === 'CaveStage') {
+            // 洞窟ステージの？ブロック
+            this.questionBlocks.add(createQuestionBlock(this, 400, 450, 'mushroom'));
+            this.questionBlocks.add(createQuestionBlock(this, 700, 350, 'coin'));
+            this.questionBlocks.add(createQuestionBlock(this, 1100, 300, 'star'));
+            this.questionBlocks.add(createQuestionBlock(this, 1700, 350, 'coin'));
+            this.questionBlocks.add(createQuestionBlock(this, 2200, 280, 'fireflower'));
+            this.questionBlocks.add(createQuestionBlock(this, 2800, 230, 'coin'));
+            this.questionBlocks.add(createQuestionBlock(this, 3400, 350, 'mushroom'));
+            this.questionBlocks.add(createQuestionBlock(this, 4000, 400, 'star'));
+            this.questionBlocks.add(createQuestionBlock(this, 4600, 430, 'coin'));
+        } else if (this.currentStage === 'CastleStage') {
+            // 城ステージの？ブロック
+            this.questionBlocks.add(createQuestionBlock(this, 400, 430, 'mushroom'));
+            this.questionBlocks.add(createQuestionBlock(this, 650, 330, 'coin'));
+            this.questionBlocks.add(createQuestionBlock(this, 850, 250, 'fireflower'));
+            this.questionBlocks.add(createQuestionBlock(this, 1300, 230, 'star'));
+            this.questionBlocks.add(createQuestionBlock(this, 1900, 230, 'coin'));
+            this.questionBlocks.add(createQuestionBlock(this, 2650, 350, 'mushroom'));
+            this.questionBlocks.add(createQuestionBlock(this, 3050, 200, 'coin'));
+            this.questionBlocks.add(createQuestionBlock(this, 3800, 250, 'star'));
+            this.questionBlocks.add(createQuestionBlock(this, 4600, 400, 'fireflower'));
+        }
     }
 
     hitQuestionBlock(player, block) {
@@ -512,8 +745,8 @@ export default class GameScene extends Phaser.Scene {
     }
     
     createGoal() {
-        // ステージの終端にゴールを配置
-        const goalX = GAME_WIDTH * 2 - 100;
+        // ステージの終端にゴールを配置（拡張されたステージの終わり）
+        const goalX = GAME_WIDTH * 4 - 200;
         const goalY = GAME_HEIGHT - 30;
         
         // ステージタイプに応じたゴール

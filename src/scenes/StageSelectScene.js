@@ -12,7 +12,8 @@ export default class StageSelectScene extends Phaser.Scene {
         // タイトル
         const titleText = this.add.text(GAME_WIDTH / 2, 100, 'ステージ選択', {
             fontSize: '40px',
-            fontFamily: 'Arial',
+            fontFamily: '"M PLUS Rounded 1c", "Noto Sans JP", sans-serif',
+            fontWeight: '900',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 6
@@ -43,7 +44,8 @@ export default class StageSelectScene extends Phaser.Scene {
             // ステージ名
             const stageText = this.add.text(x, y - 20, stage.name, {
                 fontSize: '24px',
-                fontFamily: 'Arial',
+                fontFamily: '"M PLUS Rounded 1c", "Kosugi Maru", sans-serif',
+                fontWeight: '700',
                 color: stage.color,
                 stroke: '#000000',
                 strokeThickness: 3

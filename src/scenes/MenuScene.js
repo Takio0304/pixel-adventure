@@ -108,12 +108,12 @@ export default class MenuScene extends Phaser.Scene {
             
             // メニューテキスト
             const menuText = this.add.text(GAME_WIDTH / 2, yPos, item.text, {
-                fontSize: '28px',
-                fontFamily: '"Orbitron", sans-serif',
-                fontWeight: '700',
+                fontSize: '32px',
+                fontFamily: '"M PLUS Rounded 1c", "Kosugi Maru", sans-serif',
+                fontWeight: '900',
                 color: '#ffffff',
                 stroke: '#000000',
-                strokeThickness: 4
+                strokeThickness: 5
             });
             menuText.setOrigin(0.5);
             

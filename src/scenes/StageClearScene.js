@@ -38,7 +38,8 @@ export default class StageClearScene extends Phaser.Scene {
         // ステージ名
         const stageText = this.add.text(GAME_WIDTH / 2, 220, this.stageName, {
             fontSize: '32px',
-            fontFamily: 'Arial',
+            fontFamily: '"M PLUS Rounded 1c", "Noto Sans JP", sans-serif',
+            fontWeight: '700',
             color: '#FFFFFF',
             stroke: '#000000',
             strokeThickness: 4
@@ -59,7 +60,8 @@ export default class StageClearScene extends Phaser.Scene {
             
             const label = this.add.text(GAME_WIDTH / 2 - 150, y, item.label + ':', {
                 fontSize: '24px',
-                fontFamily: 'Arial',
+                fontFamily: '"M PLUS Rounded 1c", "Noto Sans JP", sans-serif',
+                fontWeight: '700',
                 color: '#FFFFFF'
             });
             label.setAlpha(0);
@@ -104,7 +106,8 @@ export default class StageClearScene extends Phaser.Scene {
         // 続行ボタン
         const continueButton = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 100, '次へ進む', {
             fontSize: '32px',
-            fontFamily: 'Arial',
+            fontFamily: '"M PLUS Rounded 1c", "Kosugi Maru", sans-serif',
+            fontWeight: '900',
             color: '#FFFFFF',
             stroke: '#000000',
             strokeThickness: 4,

@@ -221,7 +221,8 @@ export default class GameScene extends Phaser.Scene {
         // スコア表示
         this.scoreText = this.add.text(16, 16, 'スコア: 0', {
             fontSize: '24px',
-            fontFamily: 'Arial',
+            fontFamily: '"M PLUS Rounded 1c", "Noto Sans JP", sans-serif',
+            fontWeight: '700',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 4
@@ -231,7 +232,8 @@ export default class GameScene extends Phaser.Scene {
         // コイン表示
         this.coinText = this.add.text(16, 50, 'コイン: 0', {
             fontSize: '24px',
-            fontFamily: 'Arial',
+            fontFamily: '"M PLUS Rounded 1c", "Noto Sans JP", sans-serif',
+            fontWeight: '700',
             color: '#FFD700',
             stroke: '#000000',
             strokeThickness: 4
@@ -241,7 +243,8 @@ export default class GameScene extends Phaser.Scene {
         // ライフ表示
         this.livesText = this.add.text(GAME_WIDTH - 16, 16, `ライフ: ${this.lives}`, {
             fontSize: '24px',
-            fontFamily: 'Arial',
+            fontFamily: '"M PLUS Rounded 1c", "Noto Sans JP", sans-serif',
+            fontWeight: '700',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 4
@@ -252,7 +255,8 @@ export default class GameScene extends Phaser.Scene {
         // タイマー表示
         this.timerText = this.add.text(GAME_WIDTH - 16, 50, 'タイム: 0', {
             fontSize: '24px',
-            fontFamily: 'Arial',
+            fontFamily: '"M PLUS Rounded 1c", "Noto Sans JP", sans-serif',
+            fontWeight: '700',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 4
@@ -268,11 +272,12 @@ export default class GameScene extends Phaser.Scene {
         };
         
         this.stageText = this.add.text(GAME_WIDTH / 2, 16, stageNames[this.currentStage], {
-            fontSize: '24px',
-            fontFamily: 'Arial',
+            fontSize: '26px',
+            fontFamily: '"M PLUS Rounded 1c", "Noto Sans JP", sans-serif',
+            fontWeight: '900',
             color: '#ffffff',
             stroke: '#000000',
-            strokeThickness: 4
+            strokeThickness: 5
         });
         this.stageText.setOrigin(0.5, 0);
         this.stageText.setScrollFactor(0);
@@ -925,7 +930,8 @@ export default class GameScene extends Phaser.Scene {
         // スコア表示
         const scoreText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40, `スコア: ${this.score}`, {
             fontSize: '36px',
-            fontFamily: 'Arial',
+            fontFamily: '"M PLUS Rounded 1c", "Noto Sans JP", sans-serif',
+            fontWeight: '700',
             color: '#FFFF00',
             stroke: '#000000',
             strokeThickness: 4
@@ -937,7 +943,8 @@ export default class GameScene extends Phaser.Scene {
         // コイン獲得数表示
         const coinText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, `コイン: ${this.coins}`, {
             fontSize: '28px',
-            fontFamily: 'Arial',
+            fontFamily: '"M PLUS Rounded 1c", "Noto Sans JP", sans-serif',
+            fontWeight: '700',
             color: '#FFD700',
             stroke: '#000000',
             strokeThickness: 4
@@ -960,7 +967,8 @@ export default class GameScene extends Phaser.Scene {
         // 再スタートボタン
         const restartButton = this.add.text(GAME_WIDTH / 2 - 120, GAME_HEIGHT / 2 + 80, 'もう一度', {
             fontSize: '28px',
-            fontFamily: 'Arial',
+            fontFamily: '"M PLUS Rounded 1c", "Kosugi Maru", sans-serif',
+            fontWeight: '900',
             color: '#FFFFFF',
             stroke: '#000000',
             strokeThickness: 3
@@ -972,7 +980,8 @@ export default class GameScene extends Phaser.Scene {
         // メニューに戻るボタン
         const menuButton = this.add.text(GAME_WIDTH / 2 + 120, GAME_HEIGHT / 2 + 80, 'メニューへ', {
             fontSize: '28px',
-            fontFamily: 'Arial',
+            fontFamily: '"M PLUS Rounded 1c", "Kosugi Maru", sans-serif',
+            fontWeight: '900',
             color: '#FFFFFF',
             stroke: '#000000',
             strokeThickness: 3

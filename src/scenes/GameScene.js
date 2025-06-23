@@ -543,23 +543,35 @@ export default class GameScene extends Phaser.Scene {
         this.isGameOver = true;
         this.lives--;
         
-        // プレイヤーの死亡アニメーション
-        this.player.die();
-        
-        // ライフが残っている場合は再スタート
-        this.time.delayedCall(2000, () => {
-            if (this.lives > 0) {
+        // プレイヤーの死亡アニメーション（すでにdie()内でアニメーションは実行される）
+        if (this.lives > 0) {
+            // ライフが残っている場合は再スタート
+            this.time.delayedCall(2500, () => {
                 this.scene.restart();
-            } else {
-                // ゲームオーバー処理
+            });
+        } else {
+            // ライフがない場合はゲームオーバー処理
+            // プレイヤーのアニメーション完了後に表示
+            this.time.delayedCall(2500, () => {
                 this.showGameOver();
-            }
-        });
+            });
+        }
     }
     
     showGameOver() {
-        // ゲームオーバー表示（簡易版）
-        const gameOverText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'GAME OVER', {
+        // BGMを停止
+        if (this.soundManager) {
+            this.soundManager.stopBGM();
+        }
+        
+        // 半透明の黒い背景
+        const overlay = this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.7);
+        overlay.setOrigin(0, 0);
+        overlay.setScrollFactor(0);
+        overlay.setDepth(200);
+        
+        // ゲームオーバーテキスト
+        const gameOverText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 120, 'GAME OVER', {
             fontSize: '64px',
             fontFamily: 'Arial',
             color: '#FF0000',
@@ -568,21 +580,127 @@ export default class GameScene extends Phaser.Scene {
         });
         gameOverText.setOrigin(0.5);
         gameOverText.setScrollFactor(0);
+        gameOverText.setDepth(201);
         
-        // メニューに戻るボタン
-        const backButton = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 100, 'メニューに戻る', {
-            fontSize: '32px',
+        // スコア表示
+        const scoreText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40, `スコア: ${this.score}`, {
+            fontSize: '36px',
             fontFamily: 'Arial',
-            color: '#FFFFFF',
+            color: '#FFFF00',
             stroke: '#000000',
             strokeThickness: 4
         });
-        backButton.setOrigin(0.5);
-        backButton.setInteractive();
-        backButton.setScrollFactor(0);
+        scoreText.setOrigin(0.5);
+        scoreText.setScrollFactor(0);
+        scoreText.setDepth(201);
         
-        backButton.on('pointerdown', () => {
+        // コイン獲得数表示
+        const coinText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, `コイン: ${this.coins}`, {
+            fontSize: '28px',
+            fontFamily: 'Arial',
+            color: '#FFD700',
+            stroke: '#000000',
+            strokeThickness: 4
+        });
+        coinText.setOrigin(0.5);
+        coinText.setScrollFactor(0);
+        coinText.setDepth(201);
+        
+        // ボタンの背景
+        const buttonBg1 = this.add.rectangle(GAME_WIDTH / 2 - 120, GAME_HEIGHT / 2 + 80, 200, 50, 0x4CAF50);
+        buttonBg1.setScrollFactor(0);
+        buttonBg1.setDepth(201);
+        buttonBg1.setInteractive();
+        
+        const buttonBg2 = this.add.rectangle(GAME_WIDTH / 2 + 120, GAME_HEIGHT / 2 + 80, 200, 50, 0x2196F3);
+        buttonBg2.setScrollFactor(0);
+        buttonBg2.setDepth(201);
+        buttonBg2.setInteractive();
+        
+        // 再スタートボタン
+        const restartButton = this.add.text(GAME_WIDTH / 2 - 120, GAME_HEIGHT / 2 + 80, 'もう一度', {
+            fontSize: '28px',
+            fontFamily: 'Arial',
+            color: '#FFFFFF',
+            stroke: '#000000',
+            strokeThickness: 3
+        });
+        restartButton.setOrigin(0.5);
+        restartButton.setScrollFactor(0);
+        restartButton.setDepth(202);
+        
+        // メニューに戻るボタン
+        const menuButton = this.add.text(GAME_WIDTH / 2 + 120, GAME_HEIGHT / 2 + 80, 'メニューへ', {
+            fontSize: '28px',
+            fontFamily: 'Arial',
+            color: '#FFFFFF',
+            stroke: '#000000',
+            strokeThickness: 3
+        });
+        menuButton.setOrigin(0.5);
+        menuButton.setScrollFactor(0);
+        menuButton.setDepth(202);
+        
+        // ボタンのホバーエフェクト
+        buttonBg1.on('pointerover', () => {
+            buttonBg1.setFillStyle(0x66BB6A);
+            restartButton.setScale(1.1);
+        });
+        buttonBg1.on('pointerout', () => {
+            buttonBg1.setFillStyle(0x4CAF50);
+            restartButton.setScale(1);
+        });
+        buttonBg1.on('pointerdown', () => {
+            // ライフとスコアをリセット
+            this.lives = 3;
+            this.score = 0;
+            this.coins = 0;
+            this.scene.restart({ stage: this.currentStage });
+        });
+        
+        buttonBg2.on('pointerover', () => {
+            buttonBg2.setFillStyle(0x42A5F5);
+            menuButton.setScale(1.1);
+        });
+        buttonBg2.on('pointerout', () => {
+            buttonBg2.setFillStyle(0x2196F3);
+            menuButton.setScale(1);
+        });
+        buttonBg2.on('pointerdown', () => {
             this.scene.start('MenuScene');
+        });
+        
+        // フェードインアニメーション
+        overlay.alpha = 0;
+        gameOverText.alpha = 0;
+        scoreText.alpha = 0;
+        coinText.alpha = 0;
+        buttonBg1.alpha = 0;
+        buttonBg2.alpha = 0;
+        restartButton.alpha = 0;
+        menuButton.alpha = 0;
+        
+        this.tweens.add({
+            targets: [overlay],
+            alpha: 0.7,
+            duration: 500,
+            ease: 'Power2'
+        });
+        
+        this.tweens.add({
+            targets: [gameOverText, scoreText, coinText],
+            alpha: 1,
+            duration: 800,
+            delay: 300,
+            ease: 'Power2'
+        });
+        
+        this.tweens.add({
+            targets: [buttonBg1, buttonBg2, restartButton, menuButton],
+            alpha: 1,
+            duration: 600,
+            delay: 800,
+            ease: 'Power2'
         });
     }
     

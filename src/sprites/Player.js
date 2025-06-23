@@ -220,10 +220,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             ease: 'Power2'
         });
         
-        // 一定時間後にゲームオーバー画面へ
-        this.scene.time.delayedCall(2500, () => {
-            this.scene.gameOver();
-        });
+        // playerDeathメソッドがすでに処理しているので、ここでは何もしない
     }
     
     powerUp(type) {

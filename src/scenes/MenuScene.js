@@ -18,25 +18,67 @@ export default class MenuScene extends Phaser.Scene {
         // タイトルパネル
         const titlePanel = this.add.graphics();
         titlePanel.fillStyle(0x000000, 0.7);
-        titlePanel.fillRoundedRect(GAME_WIDTH / 2 - 300, 120, 600, 120, 20);
+        titlePanel.fillRoundedRect(GAME_WIDTH / 2 - 320, 120, 640, 130, 20);
         titlePanel.lineStyle(4, 0xFFD700);
-        titlePanel.strokeRoundedRect(GAME_WIDTH / 2 - 300, 120, 600, 120, 20);
+        titlePanel.strokeRoundedRect(GAME_WIDTH / 2 - 320, 120, 640, 130, 20);
+        
+        // タイトルパネルの光るエフェクト
+        const glowEffect = this.add.graphics();
+        glowEffect.lineStyle(2, 0xFFD700, 0.5);
+        glowEffect.strokeRoundedRect(GAME_WIDTH / 2 - 322, 118, 644, 134, 20);
+        
+        this.tweens.add({
+            targets: glowEffect,
+            alpha: { from: 0.2, to: 0.8 },
+            duration: 1500,
+            ease: 'Sine.easeInOut',
+            yoyo: true,
+            repeat: -1
+        });
         
         // タイトル
         const titleText = this.add.text(GAME_WIDTH / 2, 180, 'PIXEL ADVENTURE', {
-            fontSize: '48px',
-            fontFamily: 'Arial',
+            fontSize: '42px',
+            fontFamily: '"Press Start 2P", monospace',
             color: '#FFD700',
             stroke: '#000000',
-            strokeThickness: 6
+            strokeThickness: 6,
+            shadow: {
+                offsetX: 3,
+                offsetY: 3,
+                color: '#000000',
+                blur: 5,
+                stroke: true,
+                fill: true
+            }
         });
         titleText.setOrigin(0.5);
+        
+        // サブタイトル
+        const subtitleText = this.add.text(GAME_WIDTH / 2, 220, 'A RETRO PLATFORM GAME', {
+            fontSize: '14px',
+            fontFamily: '"Orbitron", sans-serif',
+            fontWeight: '700',
+            color: '#FFFFFF',
+            alpha: 0.8
+        });
+        subtitleText.setOrigin(0.5);
         
         // タイトルのアニメーション
         this.tweens.add({
             targets: titleText,
-            scale: { from: 0.8, to: 1 },
+            scale: { from: 0.9, to: 1.05 },
             duration: 2000,
+            ease: 'Sine.easeInOut',
+            yoyo: true,
+            repeat: -1
+        });
+        
+        // サブタイトルのアニメーション
+        this.tweens.add({
+            targets: subtitleText,
+            alpha: { from: 0.5, to: 1 },
+            duration: 1500,
             ease: 'Sine.easeInOut',
             yoyo: true,
             repeat: -1
@@ -66,8 +108,9 @@ export default class MenuScene extends Phaser.Scene {
             
             // メニューテキスト
             const menuText = this.add.text(GAME_WIDTH / 2, yPos, item.text, {
-                fontSize: '32px',
-                fontFamily: 'Arial',
+                fontSize: '28px',
+                fontFamily: '"Orbitron", sans-serif',
+                fontWeight: '700',
                 color: '#ffffff',
                 stroke: '#000000',
                 strokeThickness: 4
@@ -150,17 +193,17 @@ export default class MenuScene extends Phaser.Scene {
         controlsPanel.fillRoundedRect(GAME_WIDTH / 2 - 250, GAME_HEIGHT - 80, 500, 50, 10);
         
         const controlsText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 55, 
-            '操作: ← → 移動 / スペース ジャンプ / Shift ダッシュ', {
-            fontSize: '18px',
-            fontFamily: 'Arial',
+            'CONTROLS: ←→ MOVE / SPACE JUMP / SHIFT DASH', {
+            fontSize: '16px',
+            fontFamily: '"Press Start 2P", monospace',
             color: '#ffffff'
         });
         controlsText.setOrigin(0.5);
         
         // バージョン情報
         const versionText = this.add.text(GAME_WIDTH - 10, GAME_HEIGHT - 10, 'v1.0.0', {
-            fontSize: '14px',
-            fontFamily: 'Arial',
+            fontSize: '12px',
+            fontFamily: '"Press Start 2P", monospace',
             color: '#ffffff',
             alpha: 0.5
         });

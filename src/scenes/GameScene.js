@@ -89,7 +89,7 @@ export default class GameScene extends Phaser.Scene {
         // ゲーム状態の初期化
         this.score = 0;
         this.coins = 0;
-        this.lives = 1; // テスト用
+        this.lives = 3;
         this.isGameOver = false;
         this.startTime = this.time.now;
         
@@ -106,13 +106,6 @@ export default class GameScene extends Phaser.Scene {
             this.soundManager.startBGM(bgmTypes[this.currentStage]);
         });
         
-        // デバッグ用：Gキーでゲームオーバー画面を直接表示
-        this.input.keyboard.on('keydown-G', () => {
-            console.log('G key pressed - forcing game over');
-            this.lives = 0;
-            this.isGameOver = true;
-            this.showGameOver();
-        });
     }
 
     update() {
@@ -550,13 +543,15 @@ export default class GameScene extends Phaser.Scene {
     }
     
     playerDeath() {
-        console.log('playerDeath called - isGameOver:', this.isGameOver);
         if (this.isGameOver) return;
         
         this.isGameOver = true;
         this.lives--;
-        console.log('Lives remaining:', this.lives);
-        this.updateUI();
+        
+        // ライフ表示を更新
+        if (this.livesText) {
+            this.livesText.setText(`ライフ: ${this.lives}`);
+        }
         
         // プレイヤーの死亡アニメーションを実行
         if (!this.player.isDead) {
@@ -565,7 +560,6 @@ export default class GameScene extends Phaser.Scene {
         
         if (this.lives > 0) {
             // ライフが残っている場合は再スタート
-            console.log('Restarting in 2.5 seconds...');
             this.time.addEvent({
                 delay: 2500,
                 callback: () => {
@@ -575,11 +569,9 @@ export default class GameScene extends Phaser.Scene {
             });
         } else {
             // ライフがない場合はゲームオーバー処理
-            console.log('Game Over - showing UI in 2.5 seconds...');
             this.time.addEvent({
                 delay: 2500,
                 callback: () => {
-                    console.log('Timer triggered - calling showGameOver...');
                     this.showGameOver();
                 },
                 callbackScope: this
@@ -588,7 +580,6 @@ export default class GameScene extends Phaser.Scene {
     }
     
     showGameOver() {
-        console.log('showGameOver actually called');
         
         // BGMを停止
         if (this.soundManager) {

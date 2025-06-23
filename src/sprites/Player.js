@@ -169,7 +169,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             return; // 無敵状態または既に死亡中
         }
         
-        console.log('Player taking damage - current size:', this.state.size);
         
         // ダメージ音
         if (this.scene.soundManager) {
@@ -193,7 +192,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 }
             });
         } else {
-            console.log('Player should die - calling playerDeath');
             // ゲームオーバー処理
             if (this.scene.playerDeath) {
                 this.scene.playerDeath();
@@ -202,7 +200,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
     
     die() {
-        console.log('Player die() called - isDead:', this.isDead);
         if (this.isDead) return;
         
         this.isDead = true;
@@ -232,7 +229,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             ease: 'Power2'
         });
         
-        console.log('Death animation started');
     }
     
     powerUp(type) {

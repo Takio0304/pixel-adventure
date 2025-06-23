@@ -9,6 +9,9 @@ export class Goal extends Phaser.GameObjects.Container {
         this.type = type;
         this.reached = false;
         
+        // ゴールを拡大表示
+        this.setScale(1.5);
+        
         // ゴールのタイプに応じて作成
         if (type === 'flag') {
             this.createFlag();

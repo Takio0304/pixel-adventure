@@ -10,6 +10,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         // プレイヤーを最前面に表示
         this.setDepth(60);
         
+        // スプライトを拡大表示（約1.5倍）
+        this.setScale(1.5);
+        
         // 物理設定
         this.setBounce(0.1);
         this.setCollideWorldBounds(false); // 下方向への落下を許可
@@ -314,10 +317,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 if (this.state.size === 'small') {
                     this.state.size = 'big';
                     
-                    // サイズ変更アニメーション
+                    // サイズ変更アニメーション（元の1.5倍スケールから2倍に）
                     this.scene.tweens.add({
                         targets: this,
-                        scaleY: 1.5,
+                        scaleY: 2,
                         duration: 200,
                         yoyo: true,
                         onComplete: () => {

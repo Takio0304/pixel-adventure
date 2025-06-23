@@ -5,6 +5,9 @@ export class Fireball extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this);
         
+        // 火球を拡大表示
+        this.setScale(1.5);
+        
         // 物理設定
         this.setVelocityX(direction === 'right' ? 400 : -400);
         this.setVelocityY(-200); // 少し上に飛ばす

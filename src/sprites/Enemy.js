@@ -11,6 +11,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         // 敵を表示
         this.setDepth(55);
         
+        // スプライトを拡大表示（約1.5倍）
+        this.setScale(1.5);
+        
         this.type = type;
         this.scene = scene;
         this.isDead = false;

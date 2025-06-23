@@ -12,6 +12,13 @@ export class Item extends Phaser.Physics.Arcade.Sprite {
         // アイテムを表示
         this.setDepth(55);
         
+        // スプライトを拡大表示（コインは1.5倍、その他は1.3倍）
+        if (this.type === 'coin') {
+            this.setScale(1.5);
+        } else {
+            this.setScale(1.3);
+        }
+        
         this.type = type;
         this.scene = scene;
         this.collected = false;

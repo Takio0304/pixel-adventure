@@ -84,44 +84,38 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         // 横移動
         this.setVelocityX(this.speed * this.direction);
         
+        // 速度がゼロになった場合（何かにぶつかった）も折り返す
+        if (this.body.velocity.x === 0 && this.body.touching.left) {
+            this.direction = 1;
+            this.setFlipX(true);
+        } else if (this.body.velocity.x === 0 && this.body.touching.right) {
+            this.direction = -1;
+            this.setFlipX(false);
+        }
+        
         // 壁や端に当たったら向きを変える
         if (this.body.blocked.left || this.body.blocked.right) {
             this.direction *= -1;
             this.setFlipX(this.direction > 0);
         }
         
-        // 前方の障害物を検知（土管など）
-        const checkDistance = 16;
-        const frontX = this.x + (this.direction > 0 ? checkDistance : -checkDistance);
-        const frontY = this.y;
-        
-        // 前方に障害物があるかチェック
-        const obstacle = this.scene.platforms.getChildren().find(platform => {
-            const bounds = platform.getBounds();
-            // 土管は高さがあるので、Y座標の範囲を広めにチェック
-            return frontX >= bounds.x && frontX <= bounds.x + bounds.width &&
-                   frontY >= bounds.y - bounds.height && frontY <= bounds.y;
-        });
-        
-        if (obstacle && obstacle.texture && obstacle.texture.key === 'pipe') {
-            // 土管にぶつかったら折り返す
-            this.direction *= -1;
-            this.setFlipX(this.direction > 0);
-        }
-        
         // 床の端を検知（レイキャストを使用）
+        const checkDistance = 20;
         const rayX = this.x + (this.direction > 0 ? checkDistance : -checkDistance);
         const rayY = this.y + this.height / 2 + 10;
         
         // 床があるかチェック
-        const tile = this.scene.platforms.getChildren().find(platform => {
+        let foundFloor = false;
+        this.scene.platforms.getChildren().forEach(platform => {
             const bounds = platform.getBounds();
-            return rayX >= bounds.x && rayX <= bounds.x + bounds.width &&
-                   rayY >= bounds.y && rayY <= bounds.y + bounds.height;
+            if (rayX >= bounds.x && rayX <= bounds.x + bounds.width &&
+                rayY >= bounds.y && rayY <= bounds.y + bounds.height) {
+                foundFloor = true;
+            }
         });
         
         // 床がない（穴）場合は折り返す
-        if (!tile) {
+        if (!foundFloor) {
             this.direction *= -1;
             this.setFlipX(this.direction > 0);
         }

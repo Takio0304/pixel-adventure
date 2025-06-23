@@ -1,0 +1,240 @@
+import { PLAYER_CONFIG } from '../config/gameConfig.js';
+
+export default class Player extends Phaser.Physics.Arcade.Sprite {
+    constructor(scene, x, y) {
+        super(scene, x, y, 'mushroom_idle_0');
+        
+        scene.add.existing(this);
+        scene.physics.add.existing(this);
+        
+        // 物理設定
+        this.setBounce(0.1);
+        this.setCollideWorldBounds(true);
+        this.body.setSize(12, 14);
+        this.body.setOffset(2, 2);
+        
+        // プレイヤーの状態
+        this.state = {
+            isJumping: false,
+            isDashing: false,
+            isCrouching: false,
+            canJump: true,
+            facing: 'right',
+            size: 'small', // small or big
+            powerUp: null // null, 'fire', 'star'
+        };
+        
+        this.isDead = false;
+        
+        // アニメーション設定
+        this.createAnimations();
+        
+        // 入力設定
+        this.cursors = scene.input.keyboard.createCursorKeys();
+        this.shiftKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
+        this.spaceKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        
+        // 初期アニメーション
+        this.play('idle');
+    }
+    
+    createAnimations() {
+        const scene = this.scene;
+        
+        // 待機アニメーション
+        scene.anims.create({
+            key: 'idle',
+            frames: [
+                { key: 'mushroom_idle_0' },
+                { key: 'mushroom_idle_1' }
+            ],
+            frameRate: 2,
+            repeat: -1
+        });
+        
+        // 歩行アニメーション
+        scene.anims.create({
+            key: 'walk',
+            frames: [
+                { key: 'mushroom_walk_0' },
+                { key: 'mushroom_walk_1' },
+                { key: 'mushroom_walk_2' },
+                { key: 'mushroom_walk_3' }
+            ],
+            frameRate: 8,
+            repeat: -1
+        });
+        
+        // ジャンプアニメーション
+        scene.anims.create({
+            key: 'jump',
+            frames: [{ key: 'mushroom_jump' }],
+            frameRate: 1,
+            repeat: 0
+        });
+        
+        // しゃがみアニメーション
+        scene.anims.create({
+            key: 'crouch',
+            frames: [{ key: 'mushroom_crouch' }],
+            frameRate: 1,
+            repeat: 0
+        });
+    }
+    
+    update() {
+        const onGround = this.body.touching.down;
+        const speed = this.shiftKey.isDown ? PLAYER_CONFIG.dashSpeed : PLAYER_CONFIG.speed;
+        
+        // 横移動
+        if (this.cursors.left.isDown) {
+            this.setVelocityX(-speed);
+            this.state.facing = 'left';
+            this.setFlipX(true);
+            
+            if (onGround && !this.state.isCrouching) {
+                this.play('walk', true);
+            }
+        } else if (this.cursors.right.isDown) {
+            this.setVelocityX(speed);
+            this.state.facing = 'right';
+            this.setFlipX(false);
+            
+            if (onGround && !this.state.isCrouching) {
+                this.play('walk', true);
+            }
+        } else {
+            this.setVelocityX(0);
+            
+            if (onGround && !this.state.isCrouching && !this.state.isJumping) {
+                this.play('idle', true);
+            }
+        }
+        
+        // ジャンプ
+        if (onGround) {
+            this.state.isJumping = false;
+            this.state.canJump = true;
+        }
+        
+        if ((this.cursors.up.isDown || this.spaceKey.isDown) && this.state.canJump && onGround) {
+            this.jump();
+        }
+        
+        // しゃがみ
+        if (this.cursors.down.isDown && onGround) {
+            this.crouch();
+        } else if (this.state.isCrouching && !this.cursors.down.isDown) {
+            this.standUp();
+        }
+        
+        // ジャンプ中のアニメーション
+        if (!onGround && !this.state.isCrouching) {
+            this.play('jump', true);
+        }
+    }
+    
+    jump() {
+        this.setVelocityY(PLAYER_CONFIG.jumpVelocity);
+        this.state.isJumping = true;
+        this.state.canJump = false;
+        this.play('jump');
+        
+        // ジャンプ音
+        if (this.scene.soundManager) {
+            this.scene.soundManager.playSound('jump');
+        }
+    }
+    
+    crouch() {
+        if (!this.state.isCrouching) {
+            this.state.isCrouching = true;
+            this.body.setSize(12, 8);
+            this.body.setOffset(2, 8);
+            this.play('crouch');
+        }
+    }
+    
+    standUp() {
+        this.state.isCrouching = false;
+        this.body.setSize(12, 14);
+        this.body.setOffset(2, 2);
+    }
+    
+    takeDamage() {
+        if (this.state.powerUp === 'star') {
+            return; // 無敵状態
+        }
+        
+        // ダメージ音
+        if (this.scene.soundManager) {
+            this.scene.soundManager.playSound('damage');
+        }
+        
+        if (this.state.size === 'big') {
+            this.state.size = 'small';
+            // ダメージアニメーション
+            this.scene.tweens.add({
+                targets: this,
+                alpha: 0,
+                duration: 100,
+                repeat: 5,
+                yoyo: true,
+                onComplete: () => {
+                    this.alpha = 1;
+                }
+            });
+        } else {
+            // ゲームオーバー処理
+            this.die();
+        }
+    }
+    
+    die() {
+        if (this.isDead) return;
+        
+        this.isDead = true;
+        this.disableBody(true, false);
+        this.scene.tweens.add({
+            targets: this,
+            y: this.y - 100,
+            angle: 180,
+            duration: 500,
+            ease: 'Power2',
+            onComplete: () => {
+                this.scene.tweens.add({
+                    targets: this,
+                    y: this.y + 300,
+                    duration: 500,
+                    onComplete: () => {
+                        this.destroy();
+                    }
+                });
+            }
+        });
+    }
+    
+    powerUp(type) {
+        switch(type) {
+            case 'mushroom':
+                this.state.size = 'big';
+                // TODO: 大きいスプライトに変更
+                break;
+            case 'fire':
+                this.state.powerUp = 'fire';
+                // TODO: 色を変更
+                break;
+            case 'star':
+                this.state.powerUp = 'star';
+                // 無敵エフェクト
+                this.scene.tweens.add({
+                    targets: this,
+                    alpha: 0.5,
+                    duration: 100,
+                    repeat: -1,
+                    yoyo: true
+                });
+                break;
+        }
+    }
+}

@@ -354,24 +354,24 @@ export default class GameScene extends Phaser.Scene {
             if (isGap) {
                 // 穴の始まりに見えない壁を作る
                 if (!previousWasGap) {
-                    this.createInvisibleWall(i - 8, GAME_HEIGHT - 22);
+                    this.createInvisibleWall(i - 8, GAME_HEIGHT - 30);
                 }
                 previousWasGap = true;
                 continue;
             } else {
                 // 穴の終わりに見えない壁を作る
                 if (previousWasGap) {
-                    this.createInvisibleWall(i + 8, GAME_HEIGHT - 22);
+                    this.createInvisibleWall(i + 8, GAME_HEIGHT - 30);
                 }
                 previousWasGap = false;
             }
             
-            const ground = this.platforms.create(i + 8, GAME_HEIGHT - 22, `${blockType}_block`);
-            ground.setOrigin(0.5, 0.5);
+            const ground = this.platforms.create(i, GAME_HEIGHT - 30, `${blockType}_block`);
+            ground.setOrigin(0, 0);
             
             // 地面の2段目
-            const ground2 = this.platforms.create(i + 8, GAME_HEIGHT - 6, `${blockType}_block`);
-            ground2.setOrigin(0.5, 0.5);
+            const ground2 = this.platforms.create(i, GAME_HEIGHT - 14, `${blockType}_block`);
+            ground2.setOrigin(0, 0);
         }
 
         // プラットフォームの配置（ステージごとに異なる配置）
@@ -388,12 +388,12 @@ export default class GameScene extends Phaser.Scene {
 
         // パイプの配置（ステージ全体に拡張）
         if (this.currentStage === 'GrasslandStage') {
-            this.createPipe(800, GAME_HEIGHT - 22);
-            this.createPipe(1200, GAME_HEIGHT - 22);
-            this.createPipe(2300, GAME_HEIGHT - 22);
-            this.createPipe(3000, GAME_HEIGHT - 22);
-            this.createPipe(3700, GAME_HEIGHT - 22);
-            this.createPipe(4400, GAME_HEIGHT - 22);
+            this.createPipe(800, GAME_HEIGHT - 30);
+            this.createPipe(1200, GAME_HEIGHT - 30);
+            this.createPipe(2300, GAME_HEIGHT - 30);
+            this.createPipe(3000, GAME_HEIGHT - 30);
+            this.createPipe(3700, GAME_HEIGHT - 30);
+            this.createPipe(4400, GAME_HEIGHT - 30);
         }
         
         // 敵の配置
@@ -580,8 +580,8 @@ export default class GameScene extends Phaser.Scene {
 
     createPlatformAt(x, y, width, type) {
         for (let i = 0; i < width; i++) {
-            const block = this.platforms.create(x + i * 16 + 8, y + 8, `${type}_block`);
-            block.setOrigin(0.5, 0.5);
+            const block = this.platforms.create(x + i * 16, y, `${type}_block`);
+            block.setOrigin(0, 0);
         }
     }
     
@@ -821,7 +821,7 @@ export default class GameScene extends Phaser.Scene {
     createGoal() {
         // ステージの終端にゴールを配置（拡張されたステージの終わり）
         const goalX = GAME_WIDTH * 4 - 200;
-        const goalY = GAME_HEIGHT - 22;
+        const goalY = GAME_HEIGHT - 30;
         
         // ステージタイプに応じたゴール
         const goalType = this.currentStage === 'CastleStage' ? 'gate' : 'flag';

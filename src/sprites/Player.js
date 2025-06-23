@@ -11,7 +11,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.setBounce(0.1);
         this.setCollideWorldBounds(false); // 下方向への落下を許可
         this.body.setSize(12, 14);
-        this.body.setOffset(2, 0); // 下部のオフセットを0にして地面に接地
+        this.body.setOffset(2, 1); // 少しオフセットを追加してめり込みを防ぐ
         
         // プレイヤーの状態
         this.state = {
@@ -221,10 +221,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.state.isCrouching = false;
         if (this.state.size === 'big') {
             this.body.setSize(12, 22);
-            this.body.setOffset(2, 0);
+            this.body.setOffset(2, 1);
         } else {
             this.body.setSize(12, 14);
-            this.body.setOffset(2, 0);
+            this.body.setOffset(2, 1);
         }
     }
     
@@ -247,7 +247,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             // 小さいスプライトに戻す
             this.setTexture('mushroom_idle_0');
             this.body.setSize(12, 14);
-            this.body.setOffset(2, 0);
+            this.body.setOffset(2, 1);
             this.setTint(0xFFFFFF); // 色をリセット
             
             // ダメージアニメーション
@@ -321,7 +321,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                             // 大きいスプライトに変更
                             this.setTexture('mushroom_big_idle_0');
                             this.body.setSize(12, 22);
-                            this.body.setOffset(2, 0);
+                            this.body.setOffset(2, 1);
                             
                             // 現在のアニメーションを大きいサイズ用に更新
                             const currentAnim = this.anims.getCurrentKey();
@@ -337,7 +337,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 this.state.size = 'big'; // ファイアフラワーは自動的に大きくなる
                 this.setTexture('mushroom_big_idle_0');
                 this.body.setSize(12, 22);
-                this.body.setOffset(2, 0);
+                this.body.setOffset(2, 1);
                 
                 // 赤っぽい色に変更
                 this.setTint(0xFFAAAA);

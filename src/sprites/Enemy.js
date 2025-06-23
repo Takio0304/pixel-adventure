@@ -36,7 +36,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
                 this.speed = 50 * multiplier;
                 this.direction = this.initialDirection; // 初期方向を使用
                 this.body.setSize(14, 14);
-                this.body.setOffset(1, 0);
+                this.body.setOffset(1, 1);
                 this.play('enemy_walk');
                 this.setFlipX(this.direction > 0);
                 break;
@@ -90,8 +90,26 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             this.setFlipX(this.direction > 0);
         }
         
+        // 前方の障害物を検知（土管など）
+        const checkDistance = 16;
+        const frontX = this.x + (this.direction > 0 ? checkDistance : -checkDistance);
+        const frontY = this.y;
+        
+        // 前方に障害物があるかチェック
+        const obstacle = this.scene.platforms.getChildren().find(platform => {
+            const bounds = platform.getBounds();
+            // 土管は高さがあるので、Y座標の範囲を広めにチェック
+            return frontX >= bounds.x && frontX <= bounds.x + bounds.width &&
+                   frontY >= bounds.y - bounds.height && frontY <= bounds.y;
+        });
+        
+        if (obstacle && obstacle.texture && obstacle.texture.key === 'pipe') {
+            // 土管にぶつかったら折り返す
+            this.direction *= -1;
+            this.setFlipX(this.direction > 0);
+        }
+        
         // 床の端を検知（レイキャストを使用）
-        const checkDistance = 20;
         const rayX = this.x + (this.direction > 0 ? checkDistance : -checkDistance);
         const rayY = this.y + this.height / 2 + 10;
         
@@ -102,7 +120,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
                    rayY >= bounds.y && rayY <= bounds.y + bounds.height;
         });
         
-        // 床がない（穴）か、目の前に障害物がある場合は折り返す
+        // 床がない（穴）場合は折り返す
         if (!tile) {
             this.direction *= -1;
             this.setFlipX(this.direction > 0);

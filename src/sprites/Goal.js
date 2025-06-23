@@ -112,21 +112,25 @@ export class Goal extends Phaser.GameObjects.Container {
             // 自動的に右に歩く
             player.setVelocityX(100);
             
-            // 3回ジャンプ
+            // 3回ジャンプ後、または5秒後に完了
             let jumpCount = 0;
+            let timerCount = 0;
             const jumpTimer = this.scene.time.addEvent({
                 delay: 500,
                 callback: () => {
-                    console.log('Jump timer callback, jumpCount:', jumpCount, 'touching.down:', player.body.touching.down);
-                    if (player.body.touching.down) {
+                    timerCount++;
+                    console.log('Jump timer callback, jumpCount:', jumpCount, 'touching.down:', player.body.touching.down, 'timerCount:', timerCount);
+                    
+                    if (player.body.touching.down && jumpCount < 3) {
                         player.setVelocityY(-400);
                         jumpCount++;
-                        
-                        if (jumpCount >= 3) {
-                            console.log('3 jumps completed, completing stage');
-                            jumpTimer.remove();
-                            this.completeStage();
-                        }
+                    }
+                    
+                    // 3回ジャンプ完了、または10回試行（5秒）で完了
+                    if (jumpCount >= 3 || timerCount >= 10) {
+                        console.log('Completing stage - jumps:', jumpCount, 'timer:', timerCount);
+                        jumpTimer.remove();
+                        this.completeStage();
                     }
                 },
                 repeat: -1

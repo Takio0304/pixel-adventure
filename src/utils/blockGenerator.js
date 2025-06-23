@@ -31,10 +31,14 @@ export function createBlockTextures(scene) {
     
     // 石ブロック（洞窟ステージ用）
     const stoneGraphics = scene.add.graphics();
-    stoneGraphics.fillStyle(0x696969); // ダークグレー
+    stoneGraphics.fillStyle(0x8B8B8B); // 明るいグレーに変更
     stoneGraphics.fillRect(0, 0, 16, 16);
-    stoneGraphics.lineStyle(1, 0x2F4F4F, 1);
+    stoneGraphics.lineStyle(1, 0x4F4F4F, 1);
     stoneGraphics.strokeRect(0, 0, 16, 16);
+    // ハイライトを追加
+    stoneGraphics.fillStyle(0xA9A9A9);
+    stoneGraphics.fillRect(1, 1, 2, 2);
+    // パターン
     stoneGraphics.strokeRect(2, 2, 5, 5);
     stoneGraphics.strokeRect(9, 8, 5, 5);
     stoneGraphics.generateTexture('stone_block', 16, 16);

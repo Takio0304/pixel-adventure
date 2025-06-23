@@ -55,7 +55,6 @@ export class Goal extends Phaser.GameObjects.Container {
     }
     
     reachGoal(player) {
-        console.log('reachGoal called, type:', this.type);
         if (this.reached) return;
         
         this.reached = true;
@@ -95,7 +94,6 @@ export class Goal extends Phaser.GameObjects.Container {
     }
     
     celebrateVictory(player) {
-        console.log('celebrateVictory called');
         // ゴール音
         if (this.scene.soundManager) {
             this.scene.soundManager.playSound('goal');
@@ -119,7 +117,6 @@ export class Goal extends Phaser.GameObjects.Container {
                 delay: 500,
                 callback: () => {
                     timerCount++;
-                    console.log('Jump timer callback, jumpCount:', jumpCount, 'touching.down:', player.body.touching.down, 'timerCount:', timerCount);
                     
                     if (player.body.touching.down && jumpCount < 3) {
                         player.setVelocityY(-400);
@@ -128,7 +125,6 @@ export class Goal extends Phaser.GameObjects.Container {
                     
                     // 3回ジャンプ完了、または10回試行（5秒）で完了
                     if (jumpCount >= 3 || timerCount >= 10) {
-                        console.log('Completing stage - jumps:', jumpCount, 'timer:', timerCount);
                         jumpTimer.remove();
                         this.completeStage();
                     }
@@ -141,10 +137,8 @@ export class Goal extends Phaser.GameObjects.Container {
     }
     
     completeStage() {
-        console.log('completeStage called');
         // ステージクリア処理
         this.scene.time.delayedCall(1000, () => {
-            console.log('Calling showStageComplete after delay');
             this.scene.showStageComplete();
         });
     }

@@ -11,6 +11,7 @@ import { Goal } from '../sprites/Goal.js';
 import { SoundManager } from '../managers/SoundManager.js';
 import { Fireball, createFireballSprite } from '../sprites/Fireball.js';
 import { gameSettings } from '../config/settings.js';
+import { createClouds } from '../utils/cloudGenerator.js';
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -59,6 +60,9 @@ export default class GameScene extends Phaser.Scene {
 
         // 物理エンジンの設定（ステージを長くする、下方向に余裕を持たせる）
         this.physics.world.setBounds(0, 0, GAME_WIDTH * 4, GAME_HEIGHT + 200);
+
+        // 雲を作成（背景要素）
+        createClouds(this);
 
         // グループの作成
         this.platforms = this.physics.add.staticGroup();
@@ -829,7 +833,6 @@ export default class GameScene extends Phaser.Scene {
     }
     
     handlePlayerGoalCollision(player, goal) {
-        console.log('Goal collision detected');
         if (!goal.reached) {
             goal.reachGoal(player);
             this.isGameOver = true;
@@ -837,7 +840,6 @@ export default class GameScene extends Phaser.Scene {
     }
     
     showStageComplete() {
-        console.log('showStageComplete called');
         // タイムボーナスの計算
         const elapsedTime = Math.floor((this.time.now - this.startTime) / 1000);
         const timeBonus = Math.max(0, 300 - elapsedTime) * 10;
@@ -848,12 +850,6 @@ export default class GameScene extends Phaser.Scene {
             'CaveStage': '洞窟ステージ',
             'CastleStage': '城ステージ'
         };
-        
-        console.log('Starting StageClearScene with data:', {
-            score: this.score,
-            timeBonus: timeBonus,
-            stageName: stageNames[this.currentStage]
-        });
         
         this.scene.start('StageClearScene', {
             score: this.score,

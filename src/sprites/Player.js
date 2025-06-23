@@ -9,7 +9,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         
         // 物理設定
         this.setBounce(0.1);
-        this.setCollideWorldBounds(true);
+        this.setCollideWorldBounds(false); // 下方向への落下を許可
         this.body.setSize(12, 14);
         this.body.setOffset(2, 2);
         

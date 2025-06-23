@@ -57,8 +57,8 @@ export default class GameScene extends Phaser.Scene {
         };
         this.cameras.main.setBackgroundColor(bgColors[this.currentStage]);
 
-        // 物理エンジンの設定（ステージを長くする）
-        this.physics.world.setBounds(0, 0, GAME_WIDTH * 4, GAME_HEIGHT);
+        // 物理エンジンの設定（ステージを長くする、下方向に余裕を持たせる）
+        this.physics.world.setBounds(0, 0, GAME_WIDTH * 4, GAME_HEIGHT + 200);
 
         // グループの作成
         this.platforms = this.physics.add.staticGroup();
@@ -145,8 +145,8 @@ export default class GameScene extends Phaser.Scene {
             fireball.update();
         });
         
-        // 落下チェック
-        if (this.player.y > GAME_HEIGHT) {
+        // 落下チェック（地面より少し下で判定）
+        if (this.player.y > GAME_HEIGHT + 50) {
             this.playerDeath();
         }
     }
@@ -346,9 +346,25 @@ export default class GameScene extends Phaser.Scene {
         const blockType = blockTypes[this.currentStage];
 
         // 地面の作成（ステージ全体に拡張）
+        let previousWasGap = false;
         for (let i = 0; i < GAME_WIDTH * 4; i += 16) {
             // 穴を作る（ステージごとに異なる位置）
-            if (this.shouldCreateGap(i)) continue;
+            const isGap = this.shouldCreateGap(i);
+            
+            if (isGap) {
+                // 穴の始まりに見えない壁を作る
+                if (!previousWasGap) {
+                    this.createInvisibleWall(i - 8, GAME_HEIGHT - 30);
+                }
+                previousWasGap = true;
+                continue;
+            } else {
+                // 穴の終わりに見えない壁を作る
+                if (previousWasGap) {
+                    this.createInvisibleWall(i + 8, GAME_HEIGHT - 30);
+                }
+                previousWasGap = false;
+            }
             
             const ground = this.platforms.create(i, GAME_HEIGHT - 30, `${blockType}_block`);
             ground.setOrigin(0, 0);
@@ -575,6 +591,14 @@ export default class GameScene extends Phaser.Scene {
         pipeBottom.setOrigin(0, 1); // 左下を基準点に
         pipeBottom.setDisplaySize(48, 64);
         pipeBottom.refreshBody();
+    }
+    
+    createInvisibleWall(x, y) {
+        // 見えない壁を作成（穴に落ちないように）
+        const wall = this.add.rectangle(x, y - 25, 1, 100, 0x000000, 0);
+        this.physics.add.existing(wall, true);
+        wall.body.setSize(1, 100);
+        this.platforms.add(wall);
     }
     
     shouldCreateGap(x) {

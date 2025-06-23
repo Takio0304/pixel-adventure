@@ -1,6 +1,4 @@
 import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../config/gameConfig.js';
-import { createClouds } from '../utils/cloudGenerator.js';
-import { createMarioBackground } from '../utils/marioBackgroundGenerator.js';
 
 export default class MenuScene extends Phaser.Scene {
     constructor() {
@@ -11,9 +9,8 @@ export default class MenuScene extends Phaser.Scene {
         // グラデーション背景
         this.createGradientBackground();
         
-        // 背景要素
-        createMarioBackground(this, 'GrasslandStage');
-        createClouds(this);
+        // 装飾的な背景要素を作成
+        this.createBackgroundElements();
         
         // 装飾的なパーティクル
         this.createFloatingParticles();
@@ -172,20 +169,26 @@ export default class MenuScene extends Phaser.Scene {
     
     createGradientBackground() {
         // グラデーション背景を作成
-        const graphics = this.add.graphics();
-        const colorTop = Phaser.Display.Color.HexStringToColor(COLORS.sky);
-        const colorBottom = Phaser.Display.Color.HexStringToColor('#87CEEB');
-        
-        for (let i = 0; i < GAME_HEIGHT; i++) {
-            const ratio = i / GAME_HEIGHT;
-            const color = Phaser.Display.Color.Interpolate.ColorWithColor(
-                colorTop,
-                colorBottom,
-                100,
-                ratio * 100
-            );
-            graphics.fillStyle(color.color, 1);
-            graphics.fillRect(0, i, GAME_WIDTH, 1);
+        try {
+            const graphics = this.add.graphics();
+            const colorTop = Phaser.Display.Color.HexStringToColor(COLORS.sky);
+            const colorBottom = Phaser.Display.Color.HexStringToColor('#87CEEB');
+            
+            for (let i = 0; i < GAME_HEIGHT; i++) {
+                const ratio = i / GAME_HEIGHT;
+                const color = Phaser.Display.Color.Interpolate.ColorWithColor(
+                    colorTop,
+                    colorBottom,
+                    100,
+                    ratio * 100
+                );
+                graphics.fillStyle(color.color, 1);
+                graphics.fillRect(0, i, GAME_WIDTH, 1);
+            }
+        } catch (error) {
+            console.error('Gradient background creation failed:', error);
+            // フォールバック: 単純な背景色
+            this.cameras.main.setBackgroundColor(COLORS.sky);
         }
     }
     
@@ -223,5 +226,44 @@ export default class MenuScene extends Phaser.Scene {
                 repeat: -1
             });
         }
+    }
+    
+    createBackgroundElements() {
+        // シンプルな雲を作成
+        for (let i = 0; i < 5; i++) {
+            const cloudGraphics = this.add.graphics();
+            const cloudX = Phaser.Math.Between(100, GAME_WIDTH - 100);
+            const cloudY = Phaser.Math.Between(50, 200);
+            
+            // 雲の形を描画
+            cloudGraphics.fillStyle(0xFFFFFF, 0.8);
+            cloudGraphics.fillCircle(cloudX, cloudY, 30);
+            cloudGraphics.fillCircle(cloudX - 25, cloudY, 25);
+            cloudGraphics.fillCircle(cloudX + 25, cloudY, 25);
+            cloudGraphics.fillCircle(cloudX, cloudY - 15, 20);
+            
+            cloudGraphics.setDepth(-10);
+            
+            // 雲のアニメーション
+            this.tweens.add({
+                targets: cloudGraphics,
+                x: cloudGraphics.x + Phaser.Math.Between(-20, 20),
+                duration: Phaser.Math.Between(10000, 20000),
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+        }
+        
+        // シンプルな丘を作成
+        const hillGraphics = this.add.graphics();
+        hillGraphics.fillStyle(0x228B22, 0.6);
+        
+        // 左の丘
+        hillGraphics.fillEllipse(150, GAME_HEIGHT - 50, 300, 150);
+        // 右の丘
+        hillGraphics.fillEllipse(GAME_WIDTH - 150, GAME_HEIGHT - 80, 250, 180);
+        
+        hillGraphics.setDepth(-5);
     }
 }

@@ -12,6 +12,7 @@ export class Settings {
             bgmEnabled: true,
             sfxVolume: 0.5,
             bgmVolume: 0.3,
+            difficulty: 'normal', // 難易度設定を追加
             highScores: {
                 GrasslandStage: 0,
                 CaveStage: 0,
@@ -72,6 +73,12 @@ export class Settings {
     
     setBGMVolume(volume) {
         this.data.bgmVolume = Math.max(0, Math.min(1, volume));
+        this.saveSettings();
+    }
+    
+    // 難易度設定
+    setDifficulty(difficulty) {
+        this.data.difficulty = difficulty;
         this.saveSettings();
     }
     

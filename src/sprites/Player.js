@@ -34,6 +34,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.cursors = scene.input.keyboard.createCursorKeys();
         this.shiftKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
         this.spaceKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.xKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
         
         // 初期アニメーション
         this.play('idle');
@@ -42,6 +43,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     createAnimations() {
         const scene = this.scene;
         
+        // 通常サイズのアニメーション
         // 待機アニメーション
         scene.anims.create({
             key: 'idle',
@@ -81,6 +83,47 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             frameRate: 1,
             repeat: 0
         });
+        
+        // 大きいサイズのアニメーション
+        // 待機アニメーション
+        scene.anims.create({
+            key: 'big_idle',
+            frames: [
+                { key: 'mushroom_big_idle_0' },
+                { key: 'mushroom_big_idle_1' }
+            ],
+            frameRate: 2,
+            repeat: -1
+        });
+        
+        // 歩行アニメーション
+        scene.anims.create({
+            key: 'big_walk',
+            frames: [
+                { key: 'mushroom_big_walk_0' },
+                { key: 'mushroom_big_walk_1' },
+                { key: 'mushroom_big_walk_2' },
+                { key: 'mushroom_big_walk_3' }
+            ],
+            frameRate: 8,
+            repeat: -1
+        });
+        
+        // ジャンプアニメーション
+        scene.anims.create({
+            key: 'big_jump',
+            frames: [{ key: 'mushroom_big_jump' }],
+            frameRate: 1,
+            repeat: 0
+        });
+        
+        // しゃがみアニメーション
+        scene.anims.create({
+            key: 'big_crouch',
+            frames: [{ key: 'mushroom_big_crouch' }],
+            frameRate: 1,
+            repeat: 0
+        });
     }
     
     update() {
@@ -96,7 +139,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             this.setFlipX(true);
             
             if (onGround && !this.state.isCrouching) {
-                this.play('walk', true);
+                const animKey = this.state.size === 'big' ? 'big_walk' : 'walk';
+                this.play(animKey, true);
             }
         } else if (this.cursors.right.isDown) {
             this.setVelocityX(speed);
@@ -104,13 +148,15 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             this.setFlipX(false);
             
             if (onGround && !this.state.isCrouching) {
-                this.play('walk', true);
+                const animKey = this.state.size === 'big' ? 'big_walk' : 'walk';
+                this.play(animKey, true);
             }
         } else {
             this.setVelocityX(0);
             
             if (onGround && !this.state.isCrouching && !this.state.isJumping) {
-                this.play('idle', true);
+                const animKey = this.state.size === 'big' ? 'big_idle' : 'idle';
+                this.play(animKey, true);
             }
         }
         
@@ -133,7 +179,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         
         // ジャンプ中のアニメーション
         if (!onGround && !this.state.isCrouching) {
-            this.play('jump', true);
+            const animKey = this.state.size === 'big' ? 'big_jump' : 'jump';
+            this.play(animKey, true);
+        }
+        
+        // 火球発射（Xキー）
+        if (this.xKey.isDown && this.state.powerUp === 'fire') {
+            this.shootFireball();
         }
     }
     
@@ -141,7 +193,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.setVelocityY(PLAYER_CONFIG.jumpVelocity);
         this.state.isJumping = true;
         this.state.canJump = false;
-        this.play('jump');
+        const animKey = this.state.size === 'big' ? 'big_jump' : 'jump';
+        this.play(animKey);
         
         // ジャンプ音
         if (this.scene.soundManager) {
@@ -152,16 +205,27 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     crouch() {
         if (!this.state.isCrouching) {
             this.state.isCrouching = true;
-            this.body.setSize(12, 8);
-            this.body.setOffset(2, 8);
-            this.play('crouch');
+            if (this.state.size === 'big') {
+                this.body.setSize(12, 16);
+                this.body.setOffset(2, 8);
+            } else {
+                this.body.setSize(12, 8);
+                this.body.setOffset(2, 8);
+            }
+            const animKey = this.state.size === 'big' ? 'big_crouch' : 'crouch';
+            this.play(animKey);
         }
     }
     
     standUp() {
         this.state.isCrouching = false;
-        this.body.setSize(12, 14);
-        this.body.setOffset(2, 2);
+        if (this.state.size === 'big') {
+            this.body.setSize(12, 22);
+            this.body.setOffset(2, 2);
+        } else {
+            this.body.setSize(12, 14);
+            this.body.setOffset(2, 2);
+        }
     }
     
     takeDamage() {
@@ -177,7 +241,14 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         
         if (this.state.size === 'big') {
             this.state.size = 'small';
+            this.state.powerUp = null; // パワーアップ解除
             this.invulnerable = true; // 無敵時間を設定
+            
+            // 小さいスプライトに戻す
+            this.setTexture('mushroom_idle_0');
+            this.body.setSize(12, 14);
+            this.body.setOffset(2, 2);
+            this.setTint(0xFFFFFF); // 色をリセット
             
             // ダメージアニメーション
             this.scene.tweens.add({
@@ -237,12 +308,39 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     powerUp(type) {
         switch(type) {
             case 'mushroom':
-                this.state.size = 'big';
-                // TODO: 大きいスプライトに変更
+                if (this.state.size === 'small') {
+                    this.state.size = 'big';
+                    
+                    // サイズ変更アニメーション
+                    this.scene.tweens.add({
+                        targets: this,
+                        scaleY: 1.5,
+                        duration: 200,
+                        yoyo: true,
+                        onComplete: () => {
+                            // 大きいスプライトに変更
+                            this.setTexture('mushroom_big_idle_0');
+                            this.body.setSize(12, 22);
+                            this.body.setOffset(2, 2);
+                            
+                            // 現在のアニメーションを大きいサイズ用に更新
+                            const currentAnim = this.anims.getCurrentKey();
+                            if (currentAnim && !currentAnim.startsWith('big_')) {
+                                this.play(`big_${currentAnim}`, true);
+                            }
+                        }
+                    });
+                }
                 break;
             case 'fire':
                 this.state.powerUp = 'fire';
-                // TODO: 色を変更
+                this.state.size = 'big'; // ファイアフラワーは自動的に大きくなる
+                this.setTexture('mushroom_big_idle_0');
+                this.body.setSize(12, 22);
+                this.body.setOffset(2, 2);
+                
+                // 赤っぽい色に変更
+                this.setTint(0xFFAAAA);
                 break;
             case 'star':
                 this.state.powerUp = 'star';
@@ -254,7 +352,42 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                     repeat: -1,
                     yoyo: true
                 });
+                
+                // 10秒後に無敵解除
+                this.scene.time.delayedCall(10000, () => {
+                    this.state.powerUp = null;
+                    this.alpha = 1;
+                    this.scene.tweens.killTweensOf(this);
+                });
                 break;
+        }
+    }
+    
+    shootFireball() {
+        // クールダウンチェック（連射防止）
+        if (this.lastFireballTime && this.scene.time.now - this.lastFireballTime < 500) {
+            return;
+        }
+        
+        this.lastFireballTime = this.scene.time.now;
+        
+        // 火球を生成
+        const offsetX = this.state.facing === 'right' ? 10 : -10;
+        const fireball = new (this.scene.Fireball || Phaser.Physics.Arcade.Sprite)(
+            this.scene,
+            this.x + offsetX,
+            this.y,
+            this.state.facing
+        );
+        
+        // シーンの火球グループに追加
+        if (this.scene.fireballs) {
+            this.scene.fireballs.add(fireball);
+        }
+        
+        // 発射音
+        if (this.scene.soundManager) {
+            this.scene.soundManager.playSound('shoot');
         }
     }
 }

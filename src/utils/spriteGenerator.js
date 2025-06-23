@@ -49,34 +49,50 @@ export function createAnimatedMushroomSprites(scene) {
         crouch: []
     };
     
+    // 大きいサイズのアニメーション用スプライト
+    const bigAnimations = {
+        idle: [],
+        walk: [],
+        jump: [],
+        crouch: []
+    };
+    
     // 待機アニメーション（2フレーム）
     for (let i = 0; i < 2; i++) {
+        // 通常サイズ
         const graphics = scene.add.graphics();
-        
-        // 基本の描画
         drawMushroomBase(graphics, 16, 16);
-        
-        // フレームごとの変化（傘の上下）
         const offsetY = i === 0 ? 0 : -1;
         graphics.y = offsetY;
-        
         graphics.generateTexture(`mushroom_idle_${i}`, 16, 16);
         graphics.destroy();
         animations.idle.push(`mushroom_idle_${i}`);
+        
+        // 大きいサイズ
+        const bigGraphics = scene.add.graphics();
+        drawMushroomBase(bigGraphics, 16, 24);
+        bigGraphics.y = offsetY;
+        bigGraphics.generateTexture(`mushroom_big_idle_${i}`, 16, 24);
+        bigGraphics.destroy();
+        bigAnimations.idle.push(`mushroom_big_idle_${i}`);
     }
     
     // 歩行アニメーション（4フレーム）
     for (let i = 0; i < 4; i++) {
+        // 通常サイズ
         const graphics = scene.add.graphics();
         drawMushroomBase(graphics, 16, 16);
-        
-        // 足の動き
         const legOffset = i % 2 === 0 ? -1 : 1;
-        // ここで足の位置を少しずらす処理を追加
-        
         graphics.generateTexture(`mushroom_walk_${i}`, 16, 16);
         graphics.destroy();
         animations.walk.push(`mushroom_walk_${i}`);
+        
+        // 大きいサイズ
+        const bigGraphics = scene.add.graphics();
+        drawMushroomBase(bigGraphics, 16, 24);
+        bigGraphics.generateTexture(`mushroom_big_walk_${i}`, 16, 24);
+        bigGraphics.destroy();
+        bigAnimations.walk.push(`mushroom_big_walk_${i}`);
     }
     
     // ジャンプスプライト
@@ -86,6 +102,12 @@ export function createAnimatedMushroomSprites(scene) {
     jumpGraphics.destroy();
     animations.jump.push('mushroom_jump');
     
+    const bigJumpGraphics = scene.add.graphics();
+    drawMushroomJump(bigJumpGraphics, 16, 24);
+    bigJumpGraphics.generateTexture('mushroom_big_jump', 16, 24);
+    bigJumpGraphics.destroy();
+    bigAnimations.jump.push('mushroom_big_jump');
+    
     // しゃがみスプライト
     const crouchGraphics = scene.add.graphics();
     drawMushroomCrouch(crouchGraphics, 16, 8);
@@ -93,7 +115,13 @@ export function createAnimatedMushroomSprites(scene) {
     crouchGraphics.destroy();
     animations.crouch.push('mushroom_crouch');
     
-    return animations;
+    const bigCrouchGraphics = scene.add.graphics();
+    drawMushroomCrouch(bigCrouchGraphics, 16, 16);
+    bigCrouchGraphics.generateTexture('mushroom_big_crouch', 16, 16);
+    bigCrouchGraphics.destroy();
+    bigAnimations.crouch.push('mushroom_big_crouch');
+    
+    return { animations, bigAnimations };
 }
 
 function drawMushroomBase(graphics, width, height) {

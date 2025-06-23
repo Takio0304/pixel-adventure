@@ -60,6 +60,16 @@ export default class SettingsScene extends Phaser.Scene {
             }
         );
         
+        yPos += spacing;
+        
+        // 難易度選択
+        this.createDifficultySelector('難易度', yPos,
+            gameSettings.data.difficulty || 'normal',
+            (value) => {
+                gameSettings.setDifficulty(value);
+            }
+        );
+        
         yPos += spacing * 1.5;
         
         // データリセットボタン
@@ -175,6 +185,54 @@ export default class SettingsScene extends Phaser.Scene {
             valueText.setText(Math.round(value * 100) + '%');
             
             onChange(value);
+        });
+    }
+    
+    createDifficultySelector(label, y, currentValue, onChange) {
+        // ラベル
+        const labelText = this.add.text(300, y, label + ':', {
+            fontSize: '28px',
+            fontFamily: 'Arial',
+            color: '#ffffff'
+        });
+        
+        const difficulties = [
+            { value: 'easy', label: 'やさしい', color: 0x4CAF50 },
+            { value: 'normal', label: 'ふつう', color: 0xFFA500 },
+            { value: 'hard', label: 'むずかしい', color: 0xf44336 }
+        ];
+        
+        let startX = 500;
+        difficulties.forEach((diff, index) => {
+            const button = this.add.rectangle(startX + index * 120, y, 100, 40, 
+                currentValue === diff.value ? diff.color : 0x666666);
+            button.setInteractive();
+            
+            const buttonText = this.add.text(startX + index * 120, y, diff.label, {
+                fontSize: '20px',
+                fontFamily: 'Arial',
+                color: '#ffffff'
+            });
+            buttonText.setOrigin(0.5);
+            
+            button.on('pointerdown', () => {
+                // 全てのボタンの色をリセット
+                difficulties.forEach((d, i) => {
+                    const btn = this.children.list.find(child => 
+                        child.type === 'Rectangle' && 
+                        child.x === startX + i * 120 && 
+                        child.y === y
+                    );
+                    if (btn) {
+                        btn.setFillStyle(0x666666);
+                    }
+                });
+                
+                // 選択されたボタンの色を変更
+                button.setFillStyle(diff.color);
+                currentValue = diff.value;
+                onChange(diff.value);
+            });
         });
     }
     

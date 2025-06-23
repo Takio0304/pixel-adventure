@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { gameSettings } from '../config/settings.js';
 
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, type) {
@@ -20,9 +21,18 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
     
     setupByType() {
+        // 難易度による速度調整
+        const difficulty = gameSettings.data.difficulty || 'normal';
+        const speedMultiplier = {
+            easy: 0.8,
+            normal: 1.0,
+            hard: 1.3
+        };
+        const multiplier = speedMultiplier[difficulty];
+        
         switch (this.type) {
             case 'walk':
-                this.speed = 50;
+                this.speed = 50 * multiplier;
                 this.direction = -1; // -1: 左, 1: 右
                 this.body.setSize(14, 14);
                 this.body.setOffset(1, 2);
@@ -30,7 +40,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
                 break;
                 
             case 'fly':
-                this.speed = 80;
+                this.speed = 80 * multiplier;
                 this.direction = -1;
                 this.flyHeight = this.y;
                 this.flyAmplitude = 30;
@@ -42,7 +52,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
                 break;
                 
             case 'ghost':
-                this.speed = 60;
+                this.speed = 60 * multiplier;
                 this.body.setSize(12, 14);
                 this.body.setOffset(2, 1);
                 this.body.setAllowGravity(false);

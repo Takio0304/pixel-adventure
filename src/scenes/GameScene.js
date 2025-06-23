@@ -9,6 +9,8 @@ import { WalkingEnemy, FlyingEnemy, ChasingEnemy } from '../sprites/Enemy.js';
 import { Coin, Mushroom, Star, FireFlower } from '../sprites/Item.js';
 import { Goal } from '../sprites/Goal.js';
 import { SoundManager } from '../managers/SoundManager.js';
+import { Fireball, createFireballSprite } from '../sprites/Fireball.js';
+import { gameSettings } from '../config/settings.js';
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -35,6 +37,7 @@ export default class GameScene extends Phaser.Scene {
             createEnemySprites(this);
             createItemSprites(this);
             createGoalSprites(this);
+            createFireballSprite(this);
         } catch (error) {
             console.error('Error creating sprites:', error);
             this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Error loading game assets: ' + error.message, {
@@ -62,6 +65,7 @@ export default class GameScene extends Phaser.Scene {
         this.questionBlocks = this.physics.add.group();
         this.enemies = this.physics.add.group();
         this.items = this.physics.add.group();
+        this.fireballs = this.physics.add.group();
 
         // ステージの作成
         this.createStage();
@@ -69,6 +73,7 @@ export default class GameScene extends Phaser.Scene {
         // プレイヤーの作成
         try {
             this.player = new Player(this, 100, GAME_HEIGHT - 150);
+            this.Fireball = Fireball; // Player クラスから参照できるように
         } catch (error) {
             console.error('Error creating player:', error);
             this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Error creating player: ' + error.message, {
@@ -83,8 +88,8 @@ export default class GameScene extends Phaser.Scene {
         // 衝突設定
         this.setupCollisions();
 
-        // カメラの設定
-        this.cameras.main.setBounds(0, 0, GAME_WIDTH * 2, GAME_HEIGHT);
+        // カメラの設定（拡張されたステージに合わせる）
+        this.cameras.main.setBounds(0, 0, GAME_WIDTH * 4, GAME_HEIGHT);
         this.cameras.main.startFollow(this.player);
 
         // UI表示
@@ -93,8 +98,14 @@ export default class GameScene extends Phaser.Scene {
         // ゲーム状態の初期化
         this.score = 0;
         this.coins = 0;
-        // ライフを引き継ぐか、新規ゲームなら3
-        this.lives = this.remainingLives !== undefined ? this.remainingLives : 3;
+        // ライフを引き継ぐか、新規ゲームなら難易度に応じた初期値
+        const difficulty = gameSettings.data.difficulty || 'normal';
+        const initialLives = {
+            easy: 5,
+            normal: 3,
+            hard: 1
+        };
+        this.lives = this.remainingLives !== undefined ? this.remainingLives : initialLives[difficulty];
         this.isGameOver = false;
         this.startTime = this.time.now;
         
@@ -129,6 +140,11 @@ export default class GameScene extends Phaser.Scene {
             item.update();
         });
         
+        // 火球のアップデート
+        this.fireballs.children.entries.forEach(fireball => {
+            fireball.update();
+        });
+        
         // 落下チェック
         if (this.player.y > GAME_HEIGHT) {
             this.playerDeath();
@@ -157,6 +173,12 @@ export default class GameScene extends Phaser.Scene {
         if (this.goal) {
             this.physics.add.overlap(this.player, this.goal, this.handlePlayerGoalCollision, null, this);
         }
+        
+        // 火球と敵の衝突
+        this.physics.add.overlap(this.fireballs, this.enemies, this.handleFireballEnemyCollision, null, this);
+        
+        // 火球と地形の衝突
+        this.physics.add.collider(this.fireballs, this.platforms);
     }
     
     handlePlayerEnemyCollision(player, enemy) {
@@ -176,6 +198,17 @@ export default class GameScene extends Phaser.Scene {
     
     handlePlayerItemCollision(player, item) {
         item.collect(player);
+    }
+    
+    handleFireballEnemyCollision(fireball, enemy) {
+        // 敵を倒す
+        enemy.stompedByPlayer();
+        
+        // 火球のヒットエフェクト
+        fireball.hitEnemy();
+        
+        // スコア追加
+        this.updateScore(200);
     }
 
     createUI() {
@@ -250,6 +283,9 @@ export default class GameScene extends Phaser.Scene {
         if (this.currentStage === 'CaveStage') {
             this.createDarknessEffect();
         }
+        
+        // 操作説明を最初に表示
+        this.showControls();
     }
     
     createDarknessEffect() {
@@ -355,6 +391,14 @@ export default class GameScene extends Phaser.Scene {
     }
     
     spawnEnemies() {
+        const difficulty = gameSettings.data.difficulty || 'normal';
+        const enemyMultiplier = {
+            easy: 0.7,
+            normal: 1.0,
+            hard: 1.5
+        };
+        const multiplier = enemyMultiplier[difficulty];
+        
         if (this.currentStage === 'GrasslandStage') {
             // 草原ステージの敵配置
             this.enemies.add(new WalkingEnemy(this, 400, GAME_HEIGHT - 100));
@@ -539,19 +583,22 @@ export default class GameScene extends Phaser.Scene {
             'GrasslandStage': [
                 { start: 1600, end: 1700 },
                 { start: 2400, end: 2500 },
-                { start: 3200, end: 3350 }
+                { start: 3200, end: 3350 },
+                { start: 4400, end: 4500 }
             ],
             'CaveStage': [
                 { start: 1400, end: 1550 },
                 { start: 2200, end: 2400 },
                 { start: 3000, end: 3200 },
-                { start: 3800, end: 4000 }
+                { start: 3800, end: 3950 },
+                { start: 4300, end: 4450 }
             ],
             'CastleStage': [
                 { start: 1500, end: 1650 },
                 { start: 2300, end: 2500 },
                 { start: 3100, end: 3300 },
-                { start: 3900, end: 4100 }
+                { start: 3700, end: 3900 },
+                { start: 4200, end: 4350 }
             ]
         };
         
@@ -965,6 +1012,48 @@ export default class GameScene extends Phaser.Scene {
         });
     }
     
+    showControls() {
+        // 操作説明の背景
+        const controlsBg = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT - 100, 600, 80, 0x000000, 0.7);
+        controlsBg.setScrollFactor(0);
+        
+        // 操作説明テキスト
+        const controlsText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 120, '操作方法', {
+            fontSize: '20px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 3
+        });
+        controlsText.setOrigin(0.5);
+        controlsText.setScrollFactor(0);
+        
+        const instructionsText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 90, 
+            '←→: 移動  ↑/スペース: ジャンプ  ↓: しゃがむ  Shift: ダッシュ  X: 火球(ファイア時)', {
+            fontSize: '16px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 2
+        });
+        instructionsText.setOrigin(0.5);
+        instructionsText.setScrollFactor(0);
+        
+        // 5秒後にフェードアウト
+        this.time.delayedCall(5000, () => {
+            this.tweens.add({
+                targets: [controlsBg, controlsText, instructionsText],
+                alpha: 0,
+                duration: 1000,
+                onComplete: () => {
+                    controlsBg.destroy();
+                    controlsText.destroy();
+                    instructionsText.destroy();
+                }
+            });
+        });
+    }
+
     shutdown() {
         // サウンドのクリーンアップ
         if (this.soundManager) {

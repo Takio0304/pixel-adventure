@@ -149,6 +149,27 @@ export class SoundGenerator {
         oscillator.start(this.audioContext.currentTime);
         oscillator.stop(this.audioContext.currentTime + 0.05);
     }
+    
+    // 火球発射音
+    createShootSound() {
+        if (!this.audioContext) return;
+        
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+        
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(300, this.audioContext.currentTime);
+        oscillator.frequency.linearRampToValueAtTime(100, this.audioContext.currentTime + 0.15);
+        
+        gainNode.gain.setValueAtTime(0.2, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.15);
+        
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.15);
+    }
 
     // ゴール到達音
     createGoalSound() {

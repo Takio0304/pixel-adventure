@@ -17,6 +17,10 @@ export default class GameScene extends Phaser.Scene {
 
     init(data) {
         this.currentStage = data.stage || 'GrasslandStage';
+        // シーン再起動時にライフを引き継ぐ
+        this.remainingLives = data.lives;
+        // シーン再起動時にフラグをリセット
+        this.isGameOver = false;
     }
 
     preload() {
@@ -89,7 +93,8 @@ export default class GameScene extends Phaser.Scene {
         // ゲーム状態の初期化
         this.score = 0;
         this.coins = 0;
-        this.lives = 3;
+        // ライフを引き継ぐか、新規ゲームなら3
+        this.lives = this.remainingLives !== undefined ? this.remainingLives : 3;
         this.isGameOver = false;
         this.startTime = this.time.now;
         
@@ -563,7 +568,8 @@ export default class GameScene extends Phaser.Scene {
             this.time.addEvent({
                 delay: 2500,
                 callback: () => {
-                    this.scene.restart();
+                    // ライフ数を保持して再スタート
+                    this.scene.restart({ stage: this.currentStage, lives: this.lives });
                 },
                 callbackScope: this
             });

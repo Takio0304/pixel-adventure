@@ -192,6 +192,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 }
             });
         } else {
+            // 無敵状態にして重複ダメージを防ぐ
+            this.invulnerable = true;
+            
             // ゲームオーバー処理
             if (this.scene.playerDeath) {
                 this.scene.playerDeath();

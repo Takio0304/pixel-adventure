@@ -23,7 +23,7 @@ export default class MenuScene extends Phaser.Scene {
         titlePanel.strokeRoundedRect(GAME_WIDTH / 2 - 300, 120, 600, 120, 20);
         
         // タイトル
-        const titleText = this.add.text(GAME_WIDTH / 2, 180, 'ピクセルアドベンチャー', {
+        const titleText = this.add.text(GAME_WIDTH / 2, 180, 'PIXEL ADVENTURE', {
             fontSize: '48px',
             fontFamily: 'Arial',
             color: '#FFD700',

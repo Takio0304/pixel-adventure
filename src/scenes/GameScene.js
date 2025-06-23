@@ -306,66 +306,67 @@ export default class GameScene extends Phaser.Scene {
     }
     
     createDarknessEffect() {
-        // シンプルな暗闇効果（互換性重視）
+        // シンプルな暗闇効果
         try {
-            // 背景を少し暗くする
-            this.cameras.main.setBackgroundColor('#2a2a2a');
+            // 背景を暗くする
+            this.cameras.main.setBackgroundColor('#1a1a1a');
             
-            // プレイヤーの周りに光を作成
-            const lightRadius = 250; // 光の範囲を広げる
-            this.lightCircle = this.add.graphics();
-            this.lightCircle.setDepth(99);
+            // 光の半径
+            const lightRadius = 200;
             
-            // 暗闇のオーバーレイ
-            this.darkOverlay = this.add.graphics();
-            this.darkOverlay.setDepth(50); // 100から50に下げて、UIやプレイヤーの上に来ないように
-            this.darkOverlay.setScrollFactor(0);
+            // 暗闇レイヤーを作成
+            this.darkLayer = this.add.renderTexture(0, 0, GAME_WIDTH, GAME_HEIGHT);
+            this.darkLayer.setScrollFactor(0);
+            this.darkLayer.setDepth(51);
             
-            // 環境光を追加
-            this.ambientLight = this.add.graphics();
-            this.ambientLight.setDepth(49); // 暗闇オーバーレイより下に
-            this.ambientLight.setScrollFactor(0);
+            // 光のマスクを作成
+            this.lightMask = this.make.graphics();
             
             // 更新処理
             this.time.addEvent({
-                delay: 33,
+                delay: 16,
                 callback: () => {
-                    if (this.player && this.darkOverlay) {
-                        this.darkOverlay.clear();
-                        this.ambientLight.clear();
-                        
-                        // 環境光（全体をうっすら明るく）
-                        this.ambientLight.fillStyle(0x4444ff, 0.1);
-                        this.ambientLight.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-                        
-                        // 画面全体を暗くする（透明度を下げる）
-                        this.darkOverlay.fillStyle(0x000000, 0.5); // 0.8から0.5に変更
-                        this.darkOverlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-                        
-                        // プレイヤーの位置に穴を開ける
+                    if (this.player && this.darkLayer) {
+                        // プレイヤーの位置
                         const playerX = this.player.x - this.cameras.main.scrollX;
                         const playerY = this.player.y - this.cameras.main.scrollY;
                         
-                        // グラデーション効果（より滑らかに）
-                        for (let i = lightRadius; i > 0; i -= 3) {
-                            const alpha = (i / lightRadius) * 0.5; // 暗さを調整
-                            this.darkOverlay.fillStyle(0x000000, alpha);
-                            this.darkOverlay.fillCircle(playerX, playerY, i);
+                        // 暗闇レイヤーをクリアして黒で塗りつぶす
+                        this.darkLayer.clear();
+                        this.darkLayer.fill(0x000000, 0.9);
+                        
+                        // 光のマスクをクリア
+                        this.lightMask.clear();
+                        
+                        // プレイヤーの周りにグラデーションの円を描画
+                        for (let i = 0; i < 20; i++) {
+                            const radius = lightRadius * (1 - i / 20);
+                            const alpha = 1 - (i / 20) * 0.8;
+                            this.lightMask.fillStyle(0xffffff, alpha);
+                            this.lightMask.fillCircle(playerX, playerY, radius);
                         }
                         
-                        // アイテムや敵の周りにも小さな光を追加
+                        // アイテムの周りに小さな光
                         this.items.children.entries.forEach(item => {
                             if (item.active) {
                                 const itemX = item.x - this.cameras.main.scrollX;
                                 const itemY = item.y - this.cameras.main.scrollY;
-                                // アイテムの周りに小さな光
-                                for (let i = 30; i > 0; i -= 5) {
-                                    const alpha = (i / 30) * 0.3;
-                                    this.darkOverlay.fillStyle(0xffff00, alpha);
-                                    this.darkOverlay.fillCircle(itemX, itemY, i);
+                                const dist = Phaser.Math.Distance.Between(playerX, playerY, itemX, itemY);
+                                
+                                // プレイヤーからの距離に応じて光の強さを調整
+                                if (dist < 300) {
+                                    for (let i = 0; i < 10; i++) {
+                                        const radius = 30 * (1 - i / 10);
+                                        const alpha = (1 - (i / 10)) * 0.5;
+                                        this.lightMask.fillStyle(0xffff00, alpha);
+                                        this.lightMask.fillCircle(itemX, itemY, radius);
+                                    }
                                 }
                             }
                         });
+                        
+                        // マスクを適用して光の部分を消去
+                        this.darkLayer.erase(this.lightMask, 0, 0);
                     }
                 },
                 loop: true
@@ -373,7 +374,7 @@ export default class GameScene extends Phaser.Scene {
         } catch (error) {
             console.warn('Darkness effect failed:', error);
             // フォールバック: 少し暗い背景色のみ
-            this.cameras.main.setBackgroundColor('#3a3a3a');
+            this.cameras.main.setBackgroundColor('#2a2a2a');
         }
     }
 
@@ -1127,6 +1128,14 @@ export default class GameScene extends Phaser.Scene {
     }
 
     shutdown() {
+        // 暗闇エフェクトのクリーンアップ
+        if (this.darkLayer) {
+            this.darkLayer.destroy();
+        }
+        if (this.lightMask) {
+            this.lightMask.destroy();
+        }
+        
         // サウンドのクリーンアップ
         if (this.soundManager) {
             this.soundManager.destroy();

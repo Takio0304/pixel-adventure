@@ -27,8 +27,7 @@ const config = {
     },
     callbacks: {
         postBoot: function(game) {
-            console.log('Phaser booted successfully');
-            console.log('WebGL available:', game.renderer.type === Phaser.WEBGL);
+            // ゲームが正常に起動
         }
     }
 };

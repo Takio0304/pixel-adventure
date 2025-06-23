@@ -17,30 +17,27 @@ export default class GameScene extends Phaser.Scene {
 
     init(data) {
         this.currentStage = data.stage || 'GrasslandStage';
-        console.log('GameScene init - stage:', this.currentStage);
     }
 
     preload() {
-        // 仮の画像読み込み（後で実際のアセットに置き換え）
-        this.load.image('ground', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');
+        // 動的にスプライトを生成するため、preloadは不要
     }
 
     create() {
-        console.log('GameScene create started');
         try {
             // スプライトとテクスチャを生成
-            console.log('Creating sprites...');
             createAnimatedMushroomSprites(this);
             createBlockTextures(this);
             createEnemySprites(this);
             createItemSprites(this);
             createGoalSprites(this);
-            console.log('Sprites created successfully');
         } catch (error) {
             console.error('Error creating sprites:', error);
             this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Error loading game assets: ' + error.message, {
                 fontSize: '24px',
-                fill: '#ff0000'
+                fill: '#ff0000',
+                backgroundColor: '#000000',
+                padding: { x: 10, y: 10 }
             }).setOrigin(0.5);
             return;
         }
@@ -66,9 +63,18 @@ export default class GameScene extends Phaser.Scene {
         this.createStage();
 
         // プレイヤーの作成
-        console.log('Creating player...');
-        this.player = new Player(this, 100, GAME_HEIGHT - 150);
-        console.log('Player created');
+        try {
+            this.player = new Player(this, 100, GAME_HEIGHT - 150);
+        } catch (error) {
+            console.error('Error creating player:', error);
+            this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Error creating player: ' + error.message, {
+                fontSize: '24px',
+                fill: '#ff0000',
+                backgroundColor: '#000000',
+                padding: { x: 10, y: 10 }
+            }).setOrigin(0.5);
+            return;
+        }
 
         // 衝突設定
         this.setupCollisions();

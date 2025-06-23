@@ -25,6 +25,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         };
         
         this.isDead = false;
+        this.invulnerable = false;
         
         // アニメーション設定
         this.createAnimations();
@@ -162,8 +163,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
     
     takeDamage() {
-        if (this.state.powerUp === 'star') {
-            return; // 無敵状態
+        if (this.state.powerUp === 'star' || this.invulnerable || this.isDead) {
+            return; // 無敵状態または既に死亡中
         }
         
         // ダメージ音
@@ -173,6 +174,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         
         if (this.state.size === 'big') {
             this.state.size = 'small';
+            this.invulnerable = true; // 無敵時間を設定
+            
             // ダメージアニメーション
             this.scene.tweens.add({
                 targets: this,
@@ -182,6 +185,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 yoyo: true,
                 onComplete: () => {
                     this.alpha = 1;
+                    this.invulnerable = false; // 無敵時間終了
                 }
             });
         } else {

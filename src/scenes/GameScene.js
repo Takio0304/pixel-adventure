@@ -154,6 +154,9 @@ export default class GameScene extends Phaser.Scene {
     }
     
     handlePlayerEnemyCollision(player, enemy) {
+        // 既に死亡中またはゲームオーバーの場合は処理しない
+        if (player.isDead || this.isGameOver) return;
+        
         // プレイヤーが上から踏んでいるかチェック
         if (player.body.velocity.y > 0 && player.y < enemy.y - enemy.height / 2) {
             // 敵を踏んだ
